@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FWC 2026 - Dự Đoán Tỉ Số World Cup</title>
+  <meta name="description" content="Ứng dụng dự đoán tỉ số FIFA World Cup 2026 cho team nội bộ">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loading" class="loading-overlay hidden">
+    <div class="spinner"></div>
+    <div class="loading-text">Đang xử lý...</div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Màn hình Đăng nhập -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">⚽</div>
+      <h1 class="login-title">FWC 2026</h1>
+      <p class="login-subtitle">Dự Đoán Tỉ Số World Cup Nội Bộ</p>
+      <div class="login-illustration">
+        <div class="stadium-circle"></div>
+      </div>
+      <div class="signin-button-wrapper">
+        <div id="google-signin-btn"></div>
+      </div>
+      <p class="login-footer">Vui lòng sử dụng Google Email của bạn để tham gia.</p>
+    </div>
+  </div>
+
+  <!-- Giao diện Ứng dụng chính -->
+  <div id="app" class="app-container hidden">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <span class="logo-emoji">🏆</span>
+        <span class="logo-text">FWC 2026</span>
+      </div>
+      <div class="user-profile">
+        <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+        <div class="user-info">
+          <span id="user-name" class="user-name">Đang tải...</span>
+          <span id="user-email" class="user-email">...</span>
+        </div>
+        <button id="btn-logout" class="btn-logout" title="Đăng xuất">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Nội dung chính -->
+    <main class="app-main">
+      <!-- Tab: Lịch Thi Đấu -->
+      <section id="tab-matches" class="tab-panel active">
+        <!-- Thanh chọn ngày (Scroll Ngang) -->
+        <div class="date-scroll-container">
+          <div id="date-pills" class="date-pills">
+            <!-- JS tự động render các ngày thi đấu ở đây -->
+          </div>
+        </div>
+
+        <!-- Danh sách trận đấu -->
+        <div id="matches-list" class="matches-list">
+          <!-- JS tự động render thẻ trận đấu ở đây -->
+          <div class="no-matches-placeholder">Đang tải danh sách trận đấu...</div>
+        </div>
+      </section>
+
+      <!-- Tab: Cược Ngoài / Cược Khác -->
+      <section id="tab-special" class="tab-panel">
+        <div class="special-bets-container">
+          <div class="special-bets-card">
+            <h2 class="special-bets-title">🏆 Cược Đặc Biệt</h2>
+            <p class="special-bets-subtitle">Dự đoán 4 đội bán kết, 2 đội chung kết, nhà vô địch & vua phá lưới. Cược sẽ được khóa ngay khi giải đấu chính thức bắt đầu.</p>
+            
+            <form id="special-bets-form" class="special-bets-form">
+              <div class="form-group-grid">
+                <!-- 4 Bán Kết -->
+                <div class="form-section-title">⚽ Top 4 Đội Bán Kết</div>
+                <div class="select-group">
+                  <select id="sf-team-1" class="special-select"><option value="">Chọn đội 1...</option></select>
+                  <select id="sf-team-2" class="special-select"><option value="">Chọn đội 2...</option></select>
+                  <select id="sf-team-3" class="special-select"><option value="">Chọn đội 3...</option></select>
+                  <select id="sf-team-4" class="special-select"><option value="">Chọn đội 4...</option></select>
+                </div>
+
+                <!-- 2 Chung Kết -->
+                <div class="form-section-title">⚔️ 2 Đội Chung Kết</div>
+                <div class="select-group">
+                  <select id="f-team-1" class="special-select"><option value="">Chọn đội 1...</option></select>
+                  <select id="f-team-2" class="special-select"><option value="">Chọn đội 2...</option></select>
+                </div>
+
+                <!-- Vô Địch -->
+                <div class="form-section-title">👑 Đội Vô Địch</div>
+                <div class="select-group">
+                  <select id="champion-team" class="special-select"><option value="">Chọn đội vô địch...</option></select>
+                </div>
+
+                <!-- Vua Phá Lưới -->
+                <div class="form-section-title">👟 Vua Phá Lưới</div>
+                <div class="input-group">
+                  <input type="text" id="top-scorer-input" class="special-input" placeholder="Nhập tên cầu thủ... (Ví dụ: Kylian Mbappe)">
+                </div>
+              </div>
+
+              <div id="special-bets-deadline-msg" class="deadline-msg"></div>
+              <div class="special-form-actions" style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="submit" id="btn-save-special" class="btn-save-special" style="flex: 1;">Lưu dự đoán đặc biệt</button>
+                <button type="button" id="btn-cancel-special" class="btn-cancel-special hidden" style="background: var(--bg-surface-hover); border: 1px solid var(--border); color: var(--text-primary); padding: 10px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: var(--transition);">Hủy sửa</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Bảng dự đoán của cả team -->
+          <div class="special-bets-team-card">
+            <h2 class="special-bets-title">👥 Tất cả dự đoán</h2>
+            <div class="special-table-wrapper">
+              <table class="special-table">
+                <thead>
+                  <tr>
+                    <th>Thành viên</th>
+                    <th>4 Bán Kết</th>
+                    <th>2 Chung Kết</th>
+                    <th>Vô Địch</th>
+                    <th>Vua Phá Lưới</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="special-bets-rows">
+                  <tr>
+                    <td colspan="6" class="no-data">Đang tải dữ liệu dự đoán của cả team...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Lịch Sử Đặt Cược -->
+      <section id="tab-history" class="tab-panel">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="filter-match">Lọc theo trận đấu:</label>
+            <select id="filter-match" class="filter-select">
+              <option value="all">Tất cả trận đấu</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-date">Lọc theo ngày:</label>
+            <input type="date" id="filter-date" class="filter-input">
+          </div>
+        </div>
+
+        <div id="history-list" class="history-list">
+          <div class="no-data">Không tìm thấy dữ liệu đặt cược nào.</div>
+        </div>
+      </section>
+
+      <!-- Tab: Bảng Xếp Hạng -->
+      <section id="tab-leaderboard" class="tab-panel">
+        <!-- Bộ lọc loại BXH -->
+        <div class="leaderboard-tabs">
+          <button class="leaderboard-tab-btn active" data-type="win">Thắng</button>
+          <button class="leaderboard-tab-btn" data-type="lost">Thua</button>
+          <button class="leaderboard-tab-btn" data-type="do">Tổng cược</button>
+          <button class="leaderboard-tab-btn" data-type="khomau">Khô máu</button>
+          <button class="leaderboard-tab-btn" data-type="hp">Hiệp phụ</button>
+        </div>
+
+        <!-- BXH Top 3 (visual) -->
+        <div id="podium-container" class="podium-container">
+          <!-- JS render 🥇🥈🥉 -->
+        </div>
+
+        <!-- BXH Chi tiết (Bảng) -->
+        <div class="leaderboard-table-wrapper">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Hạng</th>
+                <th>Thành viên</th>
+                <th id="leaderboard-metric-header">Số lần</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-rows">
+              <!-- JS render dòng ở đây -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Tab Navigation (Fixed Bottom) -->
+    <nav class="app-nav">
+      <button class="nav-item active" data-tab="matches">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Lịch đấu</span>
+      </button>
+      <button class="nav-item" data-tab="special">
+        <span class="nav-icon">⭐</span>
+        <span class="nav-label">Cược khác</span>
+      </button>
+      <button class="nav-item" data-tab="history">
+        <span class="nav-icon">📝</span>
+        <span class="nav-label">Lịch sử</span>
+      </button>
+      <button class="nav-item" data-tab="leaderboard">
+        <span class="nav-icon">🏆</span>
+        <span class="nav-label">Xếp hạng</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Template cho Match Card -->
+  <template id="match-card-template">
+    <div class="match-card" data-match-id="">
+      <!-- Header của card -->
+      <div class="match-card__header">
+        <div class="match-card__meta">
+          <span class="match-card__group">Vòng bảng</span>
+          <span class="match-card__number">Trận #1</span>
+        </div>
+        <span class="match-card__status badge-upcoming">Sắp diễn ra</span>
+      </div>
+
+      <!-- Thông tin thời gian & địa điểm -->
+      <div class="match-card__info">
+        <span class="match-card__time">20:00 • 12/06/2026</span>
+        <span class="match-card__stadium">Guadalajara Stadium, Guadalajara</span>
+      </div>
+
+      <!-- Đội bóng & tỉ số -->
+      <div class="match-card__teams">
+        <div class="team team--home">
+          <img class="team__flag" src="" alt="Home Flag" onerror="this.src='https://api.fifa.com/api/v3/picture/flags-sq-2/TBD';">
+          <span class="team__name">Đang cập nhật</span>
+        </div>
+        <div class="match-card__score-display">
+          <span class="score__home">-</span>
+          <span class="score__divider">:</span>
+          <span class="score__away">-</span>
+        </div>
+        <div class="team team--away">
+          <span class="team__name">Đang cập nhật</span>
+          <img class="team__flag" src="" alt="Away Flag" onerror="this.src='https://api.fifa.com/api/v3/picture/flags-sq-2/TBD';">
+        </div>
+      </div>
+
+      <!-- Hiệp phụ / Penalty nếu có -->
+      <div class="match-card__extra-status hidden">
+        Hiệp phụ/Penalty
+      </div>
+
+      <!-- Đặt cược nhanh -->
+      <div class="match-card__bet-section">
+        <div class="bet-input-row">
+          <select class="bet-type-select">
+            <option value="do">90'</option>
+            <option value="khomau">🩸</option>
+            <option value="hp">⭐</option>
+          </select>
+          <input type="text" class="bet-input" placeholder="Tỉ số (VD: 2-1)" pattern="[0-9]+-[0-9]+" required>
+          <button class="bet-btn">Lưu</button>
+          <button class="bet-cancel-btn hidden">✖</button>
+        </div>
+        <div class="bet-my-prediction">
+          <!-- Hiển thị cược của tôi -->
+        </div>
+      </div>
+
+      <!-- Danh sách cược của team -->
+      <div class="match-card__bets-expansion">
+        <div class="bets-header">
+          <span>👥 Dự đoán của cả team</span>
+          <span class="bets-count-badge">0</span>
+        </div>
+        <div class="bets-list hidden">
+          <!-- JS render danh sách cược -->
+        </div>
+      </div>
+
+    </div>
+  </template>
+
+  <!-- JS Script module -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

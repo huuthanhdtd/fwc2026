@@ -1,0 +1,505 @@
+import { API } from './api.js';
+import { Auth } from './auth.js';
+import { App } from './app.js';
+
+export const Matches = {
+  allMatches: [],
+  selectedDate: null,
+
+  async init() {
+    this.setupEventListeners();
+    await this.loadMatches();
+    this.renderDateBar();
+    
+    // Mặc định chọn ngày hôm nay. Nếu hôm nay nằm ngoài giải đấu, chọn ngày đầu tiên có trận đấu
+    const todayStr = this.getTodayDateStr();
+    const hasMatchesToday = this.allMatches.some(m => m.localDateOnly === todayStr);
+    
+    if (hasMatchesToday) {
+      this.filterByDate(todayStr);
+    } else if (this.allMatches.length > 0) {
+      // Chọn ngày có trận đấu sớm nhất
+      const firstMatchDate = this.allMatches[0].localDateOnly;
+      this.filterByDate(firstMatchDate);
+    } else {
+      this.filterByDate(todayStr);
+    }
+  },
+
+  setupEventListeners() {
+    // Event delegation cho đặt cược từ Card
+    document.getElementById('matches-list').addEventListener('click', async (e) => {
+      // Nút đặt cược
+      if (e.target.classList.contains('bet-btn')) {
+        const card = e.target.closest('.match-card');
+        const matchId = card.dataset.matchId;
+        const matchNumber = card.dataset.matchNumber;
+        const input = card.querySelector('.bet-input');
+        const select = card.querySelector('.bet-type-select');
+        
+        await this.handlePlaceBet(matchId, matchNumber, input, select, card);
+      }
+
+      // Click vào cược của tôi để sửa nhanh
+      if (e.target.closest('.my-pred-tag--editable')) {
+        const tag = e.target.closest('.my-pred-tag--editable');
+        const score = tag.dataset.score;
+        const type = tag.dataset.type;
+        const card = tag.closest('.match-card');
+        
+        this.enterEditMode(card, score, type);
+        App.showToast('Đã bật chế độ chỉnh sửa. Nhập tỷ số mới và ấn Cập nhật hoặc Hủy.', 'info');
+      }
+
+      // Click nút Hủy trong chế độ sửa
+      if (e.target.classList.contains('bet-cancel-btn')) {
+        const card = e.target.closest('.match-card');
+        this.exitEditMode(card);
+        App.showToast('Đã hủy chế độ chỉnh sửa.', 'info');
+      }
+
+      // Toggle xem danh sách dự đoán của team
+      if (e.target.closest('.bets-header')) {
+        const header = e.target.closest('.bets-header');
+        const list = header.nextElementSibling;
+        list.classList.toggle('hidden');
+      }
+    });
+
+    // Enter key cho input cược
+    document.getElementById('matches-list').addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter' && e.target.classList.contains('bet-input')) {
+        const card = e.target.closest('.match-card');
+        const btn = card.querySelector('.bet-btn');
+        btn.click();
+      }
+    });
+  },
+
+  async loadMatches() {
+    const res = await API.fetchMatches();
+    if (res && res.success && res.data && res.data.Results) {
+      this.allMatches = res.data.Results
+        .map(m => this.normalizeMatch(m))
+        .filter(m => m.home.abbr !== 'TBD' && m.away.abbr !== 'TBD');
+      // Sắp xếp theo ngày tăng dần
+      this.allMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else {
+      App.showToast('Không thể tải lịch thi đấu từ FIFA API.', 'error');
+    }
+  },
+
+  normalizeMatch(m) {
+    // Xử lý cờ
+    const getFlagUrl = (abbr, picUrl) => {
+      if (picUrl) {
+        return picUrl.replace('{format}', 'sq').replace('{size}', '2');
+      }
+      if (abbr && abbr !== 'TBD') {
+        return `https://api.fifa.com/api/v3/picture/flags-sq-2/${abbr}`;
+      }
+      return 'https://api.fifa.com/api/v3/picture/flags-sq-2/TBD';
+    };
+
+    // Tên đội
+    const getTeamName = (team, placeholder) => {
+      if (team && team.TeamName && team.TeamName.length > 0) {
+        return team.TeamName[0].Description;
+      }
+      return placeholder || 'Chưa xác định';
+    };
+
+    const localDateStr = m.LocalDate || m.Date;
+    const localDateOnly = localDateStr.substring(0, 10); // YYYY-MM-DD
+
+    return {
+      id: m.IdMatch,
+      matchNumber: m.MatchNumber,
+      date: m.Date,
+      localDate: localDateStr,
+      localDateOnly: localDateOnly,
+      stage: m.StageName && m.StageName[0] ? m.StageName[0].Description : 'Vòng bảng',
+      group: m.GroupName && m.GroupName[0] ? m.GroupName[0].Description : '',
+      home: {
+        name: getTeamName(m.Home, m.PlaceHolderA),
+        abbr: m.Home ? m.Home.Abbreviation : 'TBD',
+        flag: getFlagUrl(m.Home ? m.Home.Abbreviation : '', m.Home ? m.Home.PictureUrl : null),
+        score: m.HomeTeamScore
+      },
+      away: {
+        name: getTeamName(m.Away, m.PlaceHolderB),
+        abbr: m.Away ? m.Away.Abbreviation : 'TBD',
+        flag: getFlagUrl(m.Away ? m.Away.Abbreviation : '', m.Away ? m.Away.PictureUrl : null),
+        score: m.AwayTeamScore
+      },
+      stadium: m.Stadium && m.Stadium.Name ? m.Stadium.Name[0].Description : 'Đang cập nhật',
+      city: m.Stadium && m.Stadium.CityName ? m.Stadium.CityName[0].Description : '',
+      status: m.MatchStatus,
+      resultType: m.ResultType,
+      homePenaltyScore: m.HomeTeamPenaltyScore,
+      awayPenaltyScore: m.AwayTeamPenaltyScore
+    };
+  },
+
+  renderDateBar() {
+    const pillsContainer = document.getElementById('date-pills');
+    pillsContainer.innerHTML = '';
+
+    // Lấy danh sách các ngày thi đấu độc nhất
+    const uniqueDates = [...new Set(this.allMatches.map(m => m.localDateOnly))];
+
+    uniqueDates.forEach(dateStr => {
+      const dateObj = new Date(dateStr);
+      const pill = document.createElement('div');
+      pill.className = 'date-pill';
+      pill.dataset.date = dateStr;
+
+      const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+      const dayName = daysOfWeek[dateObj.getDay()];
+      const dayMonthStr = `${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
+
+      pill.innerHTML = `
+        <span class="pill-day">${dayName}</span>
+        <span class="pill-date">${dayMonthStr}</span>
+      `;
+
+      pill.addEventListener('click', () => {
+        this.filterByDate(dateStr);
+      });
+
+      pillsContainer.appendChild(pill);
+    });
+  },
+
+  filterByDate(dateStr) {
+    this.selectedDate = dateStr;
+    
+    // Cập nhật active pill
+    document.querySelectorAll('.date-pill').forEach(pill => {
+      if (pill.dataset.date === dateStr) {
+        pill.classList.add('active');
+        pill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      } else {
+        pill.classList.remove('active');
+      }
+    });
+
+    // Lọc trận đấu
+    const filtered = this.allMatches.filter(m => m.localDateOnly === dateStr);
+    this.renderMatches(filtered);
+  },
+
+  renderMatches(matches) {
+    const container = document.getElementById('matches-list');
+    container.innerHTML = '';
+
+    if (matches.length === 0) {
+      container.innerHTML = '<div class="no-matches-placeholder">Không có trận đấu nào trong ngày này.</div>';
+      return;
+    }
+
+    const template = document.getElementById('match-card-template');
+
+    matches.forEach(match => {
+      const card = template.content.cloneNode(true).querySelector('.match-card');
+      
+      card.dataset.matchId = match.id;
+      card.dataset.matchNumber = match.matchNumber;
+
+      // Meta info
+      card.querySelector('.match-card__group').textContent = match.group || match.stage;
+      card.querySelector('.match-card__number').textContent = `Trận #${match.matchNumber}`;
+      
+      // Status
+      const statusBadge = card.querySelector('.match-card__status');
+      statusBadge.textContent = this.getStatusText(match.status);
+      statusBadge.className = `match-card__status ${this.getStatusClass(match.status)}`;
+
+      // Time & Stadium
+      const timeStr = this.formatMatchTime(match.localDate);
+      card.querySelector('.match-card__time').textContent = timeStr;
+      card.querySelector('.match-card__stadium').textContent = `${match.stadium}, ${match.city}`;
+
+      // Teams
+      card.querySelector('.team--home .team__name').textContent = match.home.name;
+      card.querySelector('.team--home .team__flag').src = match.home.flag;
+      
+      card.querySelector('.team--away .team__name').textContent = match.away.name;
+      card.querySelector('.team--away .team__flag').src = match.away.flag;
+
+      // Scores
+      const scoreHome = card.querySelector('.score__home');
+      const scoreAway = card.querySelector('.score__away');
+      if (match.home.score !== null && match.away.score !== null) {
+        scoreHome.textContent = match.home.score;
+        scoreAway.textContent = match.away.score;
+        scoreHome.classList.add('official-score');
+        scoreAway.classList.add('official-score');
+      } else {
+        scoreHome.textContent = '-';
+        scoreAway.textContent = '-';
+      }
+
+      // Extra status (Hiệp phụ, penalty)
+      const extraStatus = card.querySelector('.match-card__extra-status');
+      if (match.homePenaltyScore !== null && match.awayPenaltyScore !== null) {
+        extraStatus.textContent = `Penalty: ${match.home.abbr} ${match.homePenaltyScore} - ${match.awayPenaltyScore} ${match.away.abbr}`;
+        extraStatus.classList.remove('hidden');
+      } else if (match.resultType === 2) {
+        extraStatus.textContent = 'Sau hiệp phụ';
+        extraStatus.classList.remove('hidden');
+      } else {
+        extraStatus.classList.add('hidden');
+      }
+
+      // Ẩn phần nhập cược nhanh nếu trận đấu đã diễn ra hoặc kết thúc
+      const now = new Date();
+      const matchStartTime = new Date(match.date);
+      const isStarted = match.status === 3 || match.status === 4 || match.status === 12 || match.status === 10 || now > matchStartTime;
+      if (isStarted) {
+        card.querySelector('.match-card__bet-section').classList.add('hidden');
+      }
+
+      // Load cược của trận đấu này
+      this.loadMatchBetsAndPredictions(match, card);
+
+      container.appendChild(card);
+    });
+  },
+
+  async loadMatchBetsAndPredictions(match, card) {
+    const betsListContainer = card.querySelector('.bets-list');
+    const badgeCount = card.querySelector('.bets-count-badge');
+    const myPredContainer = card.querySelector('.bet-my-prediction');
+
+    // Gọi API để lấy danh sách dự đoán
+    const res = await API.getMatchBets(match.id);
+    if (res && res.success && res.data) {
+      const bets = res.data;
+      badgeCount.textContent = bets.length;
+
+      // Sắp xếp cược theo tỉ số (scores) thay vì theo thời gian đặt (timestamp)
+      bets.sort((a, b) => {
+        const scoreCompare = a.scores.localeCompare(b.scores);
+        if (scoreCompare !== 0) return scoreCompare;
+        return (a.displayName || a.email).localeCompare(b.displayName || b.email);
+      });
+
+      // Hiển thị dự đoán của cả team theo 3 cột: 90', khô máu, hiệp phụ
+      betsListContainer.innerHTML = '';
+      if (bets.length === 0) {
+        betsListContainer.innerHTML = '<div class="no-data" style="grid-column: 1/-1; padding: 10px; font-size: 0.75rem;">Chưa có ai đặt cược.</div>';
+      } else {
+        const betsByType = {
+          do: [],
+          khomau: [],
+          hp: []
+        };
+
+        bets.forEach(bet => {
+          if (betsByType[bet.betType]) {
+            betsByType[bet.betType].push(bet);
+          }
+        });
+
+        const createColumn = (title, typeBets, className) => {
+          const col = document.createElement('div');
+          col.className = `bets-col ${className}`;
+          col.innerHTML = `
+            <div class="bets-col__title">${title}</div>
+            <div class="bets-col__content"></div>
+          `;
+          const content = col.querySelector('.bets-col__content');
+          typeBets.forEach(bet => {
+            const chip = document.createElement('div');
+            chip.className = 'bet-item-chip';
+            chip.innerHTML = `
+              <span class="bet-chip-score">${bet.scores}</span>
+              <span class="bet-chip-user" title="${bet.displayName || bet.email}">${bet.displayName || bet.email.split('@')[0]}</span>
+            `;
+            content.appendChild(chip);
+          });
+          return col;
+        };
+
+        // Cột 90 phút (luôn hiển thị, kể cả khi rỗng)
+        const colDo = createColumn("90 Phút", betsByType.do, "bets-col--do");
+        betsListContainer.appendChild(colDo);
+
+        // Cột Khô máu (chỉ hiển thị nếu có cược)
+        if (betsByType.khomau.length > 0) {
+          const colKhomau = createColumn("🩸 Khô máu", betsByType.khomau, "bets-col--khomau");
+          betsListContainer.appendChild(colKhomau);
+        }
+
+        // Cột Hiệp phụ (chỉ hiển thị nếu có cược)
+        if (betsByType.hp.length > 0) {
+          const colHp = createColumn("⭐ Hiệp phụ", betsByType.hp, "bets-col--hp");
+          betsListContainer.appendChild(colHp);
+        }
+      }
+
+      // Hiển thị dự đoán của chính mình
+      const myUser = Auth.getUser();
+      if (myUser) {
+        const myBets = bets.filter(b => b.email === myUser.email);
+        myPredContainer.innerHTML = '';
+        if (myBets.length > 0) {
+          myPredContainer.innerHTML = 'Cược của bạn: ';
+          
+          // Nhóm cược của mình theo betType
+          const grouped = {};
+          myBets.forEach(b => {
+            if (!grouped[b.betType]) {
+              grouped[b.betType] = [];
+            }
+            grouped[b.betType].push(b.scores);
+          });
+
+          Object.keys(grouped).forEach(betType => {
+            const scoresStr = grouped[betType].join(', ');
+            const span = document.createElement('span');
+            span.className = 'my-pred-tag my-pred-tag--editable';
+            span.title = 'Nhấp để chỉnh sửa dự đoán này';
+            span.dataset.score = scoresStr;
+            span.dataset.type = betType;
+            
+            let typeLabel = '90\'';
+            if (betType === 'khomau') typeLabel = '🩸';
+            if (betType === 'hp') typeLabel = '⭐';
+            
+            span.innerHTML = `${scoresStr} (${typeLabel}) <span class="edit-icon">✏️</span>`;
+            myPredContainer.appendChild(span);
+          });
+        } else {
+          myPredContainer.textContent = 'Bạn chưa đặt cược trận này.';
+        }
+      }
+    }
+  },
+
+  enterEditMode(card, score, type) {
+    card.dataset.mode = 'edit';
+    card.dataset.editingScore = score;
+    card.dataset.editingType = type;
+
+    const input = card.querySelector('.bet-input');
+    const select = card.querySelector('.bet-type-select');
+    const btnSave = card.querySelector('.bet-btn');
+    const btnCancel = card.querySelector('.bet-cancel-btn');
+
+    if (input && select && btnSave && btnCancel) {
+      input.value = score;
+      select.value = type;
+      btnSave.textContent = 'Lưu';
+      btnCancel.classList.remove('hidden');
+      input.focus();
+    }
+  },
+
+  exitEditMode(card) {
+    card.removeAttribute('data-mode');
+    card.removeAttribute('data-editing-score');
+    card.removeAttribute('data-editing-type');
+
+    const input = card.querySelector('.bet-input');
+    const btnSave = card.querySelector('.bet-btn');
+    const btnCancel = card.querySelector('.bet-cancel-btn');
+
+    if (input) input.value = '';
+    if (btnSave) btnSave.textContent = 'Lưu';
+    if (btnCancel) btnCancel.classList.add('hidden');
+  },
+
+  async handlePlaceBet(matchId, matchNumber, input, select, card) {
+    const scores = input.value.trim();
+    const betType = select.value;
+
+    if (!scores) {
+      App.showToast('Vui lòng nhập tỷ số!', 'warning');
+      return;
+    }
+
+    const parts = scores.split(',').map(s => s.trim());
+    const isValid = parts.every(p => /^\d+-\d+$/.test(p));
+    if (!isValid) {
+      App.showToast('Định dạng tỷ số không đúng! VD: 2-1 hoặc 2-1,3-2', 'warning');
+      return;
+    }
+
+    const match = this.allMatches.find(m => m.id === matchId);
+    if (!match) return;
+
+    const isEdit = card.dataset.mode === 'edit';
+
+    const res = await API.placeBet(
+      matchId,
+      matchNumber,
+      scores,
+      betType,
+      match.home.name,
+      match.away.name,
+      match.localDateOnly,
+      isEdit // overwrite parameter
+    );
+
+    if (res && res.success) {
+      App.showToast(res.message, 'success');
+      this.exitEditMode(card);
+      this.loadMatchBetsAndPredictions(match, card);
+    } else {
+      App.showToast(res ? res.message : 'Lỗi không xác định khi đặt cược.', 'error');
+    }
+  },
+
+  getStatusText(status) {
+    switch (status) {
+      case 0:
+      case 1:
+        return 'Sắp diễn ra';
+      case 3:
+      case 4:
+        return 'Đang diễn ra';
+      case 12:
+        return 'Nghỉ giữa hiệp';
+      case 10:
+        return 'Kết thúc';
+      default:
+        return 'Chưa diễn ra';
+    }
+  },
+
+  getStatusClass(status) {
+    switch (status) {
+      case 0:
+      case 1:
+        return 'badge-upcoming';
+      case 3:
+      case 4:
+      case 12:
+        return 'badge-live';
+      case 10:
+        return 'badge-finished';
+      default:
+        return 'badge-upcoming';
+    }
+  },
+
+  formatMatchTime(dateStr) {
+    const date = new Date(dateStr);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${hours}:${minutes} • ${day}/${month}/${year}`;
+  },
+
+  getTodayDateStr() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+};

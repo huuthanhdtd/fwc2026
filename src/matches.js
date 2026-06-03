@@ -109,14 +109,21 @@ export const Matches = {
       return placeholder || 'Chưa xác định';
     };
 
-    const localDateStr = m.LocalDate || m.Date;
-    const localDateOnly = localDateStr.substring(0, 10); // YYYY-MM-DD
+    let localDateOnly = '';
+    try {
+      const dateObj = new Date(m.Date);
+      const formatter = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' });
+      localDateOnly = formatter.format(dateObj);
+    } catch (e) {
+      console.warn('Lỗi format GMT+7 localDateOnly:', e);
+      localDateOnly = (m.LocalDate || m.Date).substring(0, 10);
+    }
 
     return {
       id: m.IdMatch,
       matchNumber: m.MatchNumber,
       date: m.Date,
-      localDate: localDateStr,
+      localDate: m.Date,
       localDateOnly: localDateOnly,
       stage: m.StageName && m.StageName[0] ? m.StageName[0].Description : 'Vòng bảng',
       group: m.GroupName && m.GroupName[0] ? m.GroupName[0].Description : '',
@@ -149,14 +156,26 @@ export const Matches = {
     const uniqueDates = [...new Set(this.allMatches.map(m => m.localDateOnly))];
 
     uniqueDates.forEach(dateStr => {
-      const dateObj = new Date(dateStr);
+      // Tách phần ngày tháng trực tiếp từ YYYY-MM-DD để tránh lệch múi giờ
+      const parts = dateStr.split('-');
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]);
+      const day = parseInt(parts[2]);
+
+      // Tạo date object ở GMT+7 để lấy thứ trong tuần chính xác
+      const dateObj = new Date(`${dateStr}T12:00:00+07:00`);
+      
+      const weekdayFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Ho_Chi_Minh', weekday: 'short' });
+      const weekdayStr = weekdayFormatter.format(dateObj); // returns "Sun", "Mon", ...
+      const daysOfWeekMap = {
+        'Sun': 'CN', 'Mon': 'T2', 'Tue': 'T3', 'Wed': 'T4', 'Thu': 'T5', 'Fri': 'T6', 'Sat': 'T7'
+      };
+      const dayName = daysOfWeekMap[weekdayStr] || 'CN';
+      const dayMonthStr = `${day}/${month}`;
+
       const pill = document.createElement('div');
       pill.className = 'date-pill';
       pill.dataset.date = dateStr;
-
-      const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-      const dayName = daysOfWeek[dateObj.getDay()];
-      const dayMonthStr = `${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
 
       pill.innerHTML = `
         <span class="pill-day">${dayName}</span>
@@ -486,20 +505,39 @@ export const Matches = {
   },
 
   formatMatchTime(dateStr) {
-    const date = new Date(dateStr);
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${hours}:${minutes} • ${day}/${month}/${year}`;
+    try {
+      const date = new Date(dateStr);
+      const options = { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false, day: '2-digit', month: '2-digit', year: 'numeric' };
+      const formatter = new Intl.DateTimeFormat('vi-VN', options);
+      const parts = formatter.formatToParts(date);
+      
+      let hour = '00', minute = '00', day = '01', month = '01', year = '2026';
+      parts.forEach(p => {
+        if (p.type === 'hour') hour = p.value;
+        if (p.type === 'minute') minute = p.value;
+        if (p.type === 'day') day = p.value;
+        if (p.type === 'month') month = p.value;
+        if (p.type === 'year') year = p.value;
+      });
+      return `${hour}:${minute} • ${day}/${month}/${year}`;
+    } catch (e) {
+      console.warn('Lỗi formatMatchTime:', e);
+      return dateStr;
+    }
   },
 
   getTodayDateStr() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    try {
+      const date = new Date();
+      const formatter = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' });
+      return formatter.format(date);
+    } catch (e) {
+      console.warn('Lỗi getTodayDateStr:', e);
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
   }
 };

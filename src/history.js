@@ -151,7 +151,15 @@ export const History = {
         matchInfo = `Trận #${actualMatch.matchNumber} • ${actualMatch.group || actualMatch.stage}`;
         
         const d = new Date(actualMatch.date);
-        matchDateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        const dateOptions = { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric' };
+        const dateParts = new Intl.DateTimeFormat('vi-VN', dateOptions).formatToParts(d);
+        let matchDay = '01', matchMonth = '01', matchYear = '2026';
+        dateParts.forEach(p => {
+          if (p.type === 'day') matchDay = p.value;
+          if (p.type === 'month') matchMonth = p.value;
+          if (p.type === 'year') matchYear = p.value;
+        });
+        matchDateStr = `${matchDay}/${matchMonth}/${matchYear}`;
 
         isStarted = actualMatch.status === 3 || actualMatch.status === 4 || actualMatch.status === 12 || actualMatch.status === 10 || new Date() > new Date(actualMatch.date);
 

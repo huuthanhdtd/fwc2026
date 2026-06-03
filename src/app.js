@@ -123,11 +123,22 @@ export const App = {
 
   formatDate(dateStr) {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    try {
+      const date = new Date(dateStr);
+      const options = { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric' };
+      const formatter = new Intl.DateTimeFormat('vi-VN', options);
+      const parts = formatter.formatToParts(date);
+      let day = '01', month = '01', year = '2026';
+      parts.forEach(p => {
+        if (p.type === 'day') day = p.value;
+        if (p.type === 'month') month = p.value;
+        if (p.type === 'year') year = p.value;
+      });
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      console.warn('Lỗi formatDate:', e);
+      return dateStr;
+    }
   },
 
   timeAgo(dateStr) {

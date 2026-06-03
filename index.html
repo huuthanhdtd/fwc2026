@@ -88,31 +88,39 @@
             <form id="special-bets-form" class="special-bets-form">
               <div class="form-group-grid">
                 <!-- 4 Bán Kết -->
-                <div class="form-section-title">⚽ Top 4 Đội Bán Kết</div>
-                <div class="select-group">
-                  <select id="sf-team-1" class="special-select"><option value="">Chọn đội 1...</option></select>
-                  <select id="sf-team-2" class="special-select"><option value="">Chọn đội 2...</option></select>
-                  <select id="sf-team-3" class="special-select"><option value="">Chọn đội 3...</option></select>
-                  <select id="sf-team-4" class="special-select"><option value="">Chọn đội 4...</option></select>
+                <div class="special-bet-col">
+                  <div class="form-section-title">⚽ Top 4 Bán Kết</div>
+                  <div class="select-group--vertical">
+                    <select id="sf-team-1" class="special-select"><option value="">Chọn đội 1...</option></select>
+                    <select id="sf-team-2" class="special-select"><option value="">Chọn đội 2...</option></select>
+                    <select id="sf-team-3" class="special-select"><option value="">Chọn đội 3...</option></select>
+                    <select id="sf-team-4" class="special-select"><option value="">Chọn đội 4...</option></select>
+                  </div>
                 </div>
 
                 <!-- 2 Chung Kết -->
-                <div class="form-section-title">⚔️ 2 Đội Chung Kết</div>
-                <div class="select-group">
-                  <select id="f-team-1" class="special-select"><option value="">Chọn đội 1...</option></select>
-                  <select id="f-team-2" class="special-select"><option value="">Chọn đội 2...</option></select>
+                <div class="special-bet-col">
+                  <div class="form-section-title">⚔️ 2 Chung Kết</div>
+                  <div class="select-group--vertical">
+                    <select id="f-team-1" class="special-select"><option value="">Chọn đội 1...</option></select>
+                    <select id="f-team-2" class="special-select"><option value="">Chọn đội 2...</option></select>
+                  </div>
                 </div>
 
                 <!-- Vô Địch -->
-                <div class="form-section-title">👑 Đội Vô Địch</div>
-                <div class="select-group">
-                  <select id="champion-team" class="special-select"><option value="">Chọn đội vô địch...</option></select>
+                <div class="special-bet-col">
+                  <div class="form-section-title">👑 Đội Vô Địch</div>
+                  <div class="select-group--vertical">
+                    <select id="champion-team" class="special-select"><option value="">Chọn đội vô địch...</option></select>
+                  </div>
                 </div>
 
                 <!-- Vua Phá Lưới -->
-                <div class="form-section-title">👟 Vua Phá Lưới</div>
-                <div class="input-group">
-                  <input type="text" id="top-scorer-input" class="special-input" placeholder="Nhập tên cầu thủ... (Ví dụ: Kylian Mbappe)">
+                <div class="special-bet-col">
+                  <div class="form-section-title">👟 Vua Phá Lưới</div>
+                  <div class="input-group">
+                    <input type="text" id="top-scorer-input" class="special-input" style="width: 100%;" placeholder="Nhập tên cầu thủ... (Ví dụ: Mbappe)">
+                  </div>
                 </div>
               </div>
 
@@ -274,7 +282,7 @@
             <option value="khomau">🩸</option>
             <option value="hp">⭐</option>
           </select>
-          <input type="text" class="bet-input" placeholder="Tỉ số (VD: 2-1)" pattern="[0-9]+-[0-9]+" required>
+          <input type="text" class="bet-input" placeholder="Tỉ số (VD: 2-1,1-2)" pattern="[0-9]+-[0-9]+" required>
           <button class="bet-btn">Lưu</button>
           <button class="bet-cancel-btn hidden">✖</button>
         </div>

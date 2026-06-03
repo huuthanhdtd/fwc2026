@@ -184,11 +184,27 @@ export const Special = {
     } else {
       let deadlineText = 'Đang xác định...';
       if (this.deadline) {
-        const hours = String(this.deadline.getHours()).padStart(2, '0');
-        const minutes = String(this.deadline.getMinutes()).padStart(2, '0');
-        const day = String(this.deadline.getDate()).padStart(2, '0');
-        const month = String(this.deadline.getMonth() + 1).padStart(2, '0');
-        deadlineText = `${hours}:${minutes} ngày ${day}/${month}/${this.deadline.getFullYear()}`;
+        try {
+          const options = { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false, day: '2-digit', month: '2-digit', year: 'numeric' };
+          const formatter = new Intl.DateTimeFormat('vi-VN', options);
+          const parts = formatter.formatToParts(this.deadline);
+          let hour = '00', minute = '00', day = '01', month = '01', year = '2026';
+          parts.forEach(p => {
+            if (p.type === 'hour') hour = p.value;
+            if (p.type === 'minute') minute = p.value;
+            if (p.type === 'day') day = p.value;
+            if (p.type === 'month') month = p.value;
+            if (p.type === 'year') year = p.value;
+          });
+          deadlineText = `${hour}:${minute} ngày ${day}/${month}/${year}`;
+        } catch (e) {
+          console.warn('Lỗi format deadline GMT+7:', e);
+          const hours = String(this.deadline.getHours()).padStart(2, '0');
+          const minutes = String(this.deadline.getMinutes()).padStart(2, '0');
+          const day = String(this.deadline.getDate()).padStart(2, '0');
+          const month = String(this.deadline.getMonth() + 1).padStart(2, '0');
+          deadlineText = `${hours}:${minutes} ngày ${day}/${month}/${this.deadline.getFullYear()}`;
+        }
       }
       deadlineMsg.textContent = `⏳ Hạn cuối lưu cược ngoài: trước ${deadlineText} (trận khai mạc giải bắt đầu).`;
       deadlineMsg.className = 'deadline-msg open';

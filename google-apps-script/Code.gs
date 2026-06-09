@@ -923,6 +923,30 @@ function processCommand(message, email, displayName) {
       return handleBetInfoCommand(email, parts);
     }
 
+    // --- /bk đội 1, đội 2, đội 3, đội 4 ---
+    if (command === '/bk') {
+      var val = parts.slice(1).join(' ').trim();
+      return handleSpecialBetCommand(email, displayName, 'semifinals', val);
+    }
+
+    // --- /ck đội 1, đội 2 ---
+    if (command === '/ck') {
+      var val = parts.slice(1).join(' ').trim();
+      return handleSpecialBetCommand(email, displayName, 'finals', val);
+    }
+
+    // --- /vd or /vđ tên đội ---
+    if (command === '/vd' || command === '/vđ') {
+      var val = parts.slice(1).join(' ').trim();
+      return handleSpecialBetCommand(email, displayName, 'champion', val);
+    }
+
+    // --- /vpl tên cầu thủ ---
+    if (command === '/vpl') {
+      var val = parts.slice(1).join(' ').trim();
+      return handleSpecialBetCommand(email, displayName, 'topScorer', val);
+    }
+
     // --- /M/d (ví dụ: /6/15) - Trận đấu theo ngày ---
     var dateMatch = msg.match(/^\/(\d{1,2}\/\d{1,2})$/);
     if (dateMatch) {
@@ -934,21 +958,114 @@ function processCommand(message, email, displayName) {
       success: false,
       message: '❓ Lệnh không hợp lệ: "' + command + '"\n\n' +
         '📖 Danh sách lệnh:\n' +
-        '/do #<trận> <tỷ số> - Dự đoán\n' +
-        '/khomau #<trận> <tỷ số> - Khô máu\n' +
-        '/hp #<trận> <tỷ số> - Hiệp phụ\n' +
-        '/change #<trận> <cũ> <mới> - Đổi tỷ số\n' +
-        '/today - Trận hôm nay\n' +
-        '/M/d - Trận theo ngày\n' +
-        '/upcoming - Trận sắp tới\n' +
-        '/me [all/#<trận>/M/d] - Dự đoán của tôi\n' +
-        '/top [do/win/lost/khomau/hp] - Bảng xếp hạng\n' +
-        '/bet - Thông tin tài khoản',
+        '/do #<trận> <tỷ số> - Đăng ký cược 90\' (Ví dụ: /do #1 2-1)\n' +
+        '/change #<trận> <cũ> <mới> - Sửa tỷ số (Ví dụ: /change #1 2-1 1-1)\n' +
+        '/khomau #<trận> <tỷ số> - Đặt cược Khô máu\n' +
+        '/hp #<trận> <tỷ số> - Đặt cược Hiệp phụ\n' +
+        '/today - Xem lịch đấu hôm nay\n' +
+        '/M/d - Xem lịch đấu ngày cụ thể (Ví dụ: /6/12)\n' +
+        '/upcoming - Xem các trận sắp tới\n' +
+        '/me [all/#<trận>/M/d] - Xem đăng ký cược của bạn\n' +
+        '/top [do/win/lost/khomau/hp] - Xem bảng xếp hạng\n' +
+        '/bet - Xem tài khoản\n' +
+        '/bk <đội 1>, <đội 2>, <đội 3>, <đội 4> - Dự đoán 4 đội Bán kết\n' +
+        '/ck <đội 1>, <đội 2> - Dự đoán 2 đội Chung kết\n' +
+        '/vd <đội> - Dự đoán đội Vô địch\n' +
+        '/vpl <cầu thủ> - Dự đoán Vua phá lưới',
       data: null
     };
 
   } catch (error) {
     return { success: false, message: '❌ Lỗi xử lý lệnh: ' + error.message, data: null };
+  }
+}
+
+/**
+ * Xử lý các lệnh cược đặc biệt (Special Bets) từ chat/Discord.
+ */
+function handleSpecialBetCommand(email, displayName, field, value) {
+  try {
+    if (!value) {
+      return { success: false, message: '❌ Vui lòng nhập thông tin cược đặc biệt!', data: null };
+    }
+
+    // Kiểm tra thời gian khóa cược ngoài (trước khi trận khai mạc bắt đầu)
+    var scheduleSheet = getOrCreateSheet('Schedule', SHEET_HEADERS['Schedule']);
+    var scheduleData = scheduleSheet.getDataRange().getValues();
+    var firstMatchStartTime = null;
+    
+    for (var i = 1; i < scheduleData.length; i++) {
+      var matchDateStr = scheduleData[i][2]; // Cột date
+      if (matchDateStr) {
+        var matchTime = new Date(matchDateStr);
+        if (!firstMatchStartTime || matchTime < firstMatchStartTime) {
+          firstMatchStartTime = matchTime;
+        }
+      }
+    }
+    
+    if (firstMatchStartTime && new Date() > firstMatchStartTime) {
+      return { success: false, message: '❌ Giải đấu đã chính thức khởi tranh. Bạn không thể đặt hoặc sửa cược ngoài!', data: null };
+    }
+
+    // Validate số lượng đội đối với bán kết / chung kết
+    if (field === 'semifinals') {
+      var teams = value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      if (teams.length !== 4) {
+        return { success: false, message: '❌ Lệnh cược bán kết yêu cầu nhập đúng 4 đội cách nhau bằng dấu phẩy!\nVí dụ: /bk Đức, Pháp, Anh, Ý', data: null };
+      }
+      value = teams.join(', ');
+    } else if (field === 'finals') {
+      var teams = value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      if (teams.length !== 2) {
+        return { success: false, message: '❌ Lệnh cược chung kết yêu cầu nhập đúng 2 đội cách nhau bằng dấu phẩy!\nVí dụ: /ck Đức, Pháp', data: null };
+      }
+      value = teams.join(', ');
+    }
+
+    var sheet = getOrCreateSheet('SpecialBets', SHEET_HEADERS['SpecialBets']);
+    var allData = sheet.getDataRange().getValues();
+    var latestRowIndex = -1;
+    var latestRowData = null;
+
+    // Tìm dòng cược gần nhất của user này
+    for (var i = allData.length - 1; i >= 1; i--) {
+      if (allData[i][1] === email) {
+        latestRowIndex = i + 1;
+        latestRowData = allData[i];
+        break;
+      }
+    }
+
+    var data = {
+      email: email,
+      displayName: displayName
+    };
+
+    if (latestRowIndex > 0) {
+      // Cập nhật dòng cược ngoài hiện tại
+      data.timestamp = String(latestRowData[0]);
+      data.semifinals = latestRowData[3];
+      data.finals = latestRowData[4];
+      data.champion = latestRowData[5];
+      data.topScorer = latestRowData[6];
+      
+      // Ghi đè trường tương ứng
+      data[field] = value;
+    } else {
+      // Tạo cược ngoài mới
+      data.semifinals = '';
+      data.finals = '';
+      data.champion = '';
+      data.topScorer = '';
+      data[field] = value;
+    }
+
+    // Gọi hàm placeSpecialBet hiện tại
+    return placeSpecialBet(data);
+
+  } catch (error) {
+    return { success: false, message: '❌ Lỗi cược ngoài: ' + error.message, data: null };
   }
 }
 

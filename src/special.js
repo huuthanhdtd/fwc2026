@@ -41,13 +41,13 @@ export const Special = {
       const sf2 = document.getElementById('sf-team-2').value;
       const sf3 = document.getElementById('sf-team-3').value;
       const sf4 = document.getElementById('sf-team-4').value;
-      
+
       const sfSelected = [sf1, sf2, sf3, sf4].filter(Boolean);
       const semifinals = sfSelected.sort().join(', ');
 
       const f1 = document.getElementById('f-team-1').value;
       const f2 = document.getElementById('f-team-2').value;
-      
+
       const fSelected = [f1, f2].filter(Boolean);
       const finals = fSelected.sort().join(', ');
 
@@ -81,7 +81,7 @@ export const Special = {
       // Gọi API cập nhật lên Google Sheets
       const res = await API.placeSpecialBet(semifinals, finals, champion, topScorer, editingTimestamp);
       App.hideLoading();
-      
+
       if (res && res.success) {
         App.showToast(res.message, 'success');
         if (isEdit) {
@@ -109,7 +109,7 @@ export const Special = {
     if (Matches.allMatches && Matches.allMatches.length > 0) {
       this.deadline = new Date(Matches.allMatches[0].date);
     }
-    
+
     // 3. Cập nhật giao diện Trạng thái khóa cược
     this.updateLockStatus();
 
@@ -150,7 +150,7 @@ export const Special = {
       const isSF = select.id.startsWith('sf-');
       const isF = select.id.startsWith('f-');
       const isChamp = select.id === 'champion-team';
-      
+
       let defaultLabel = 'Chọn đội...';
       if (isSF) defaultLabel = 'Chọn đội bán kết...';
       if (isF) defaultLabel = 'Chọn đội chung kết...';
@@ -218,7 +218,7 @@ export const Special = {
       document.getElementById('sf-team-2').value = "";
       document.getElementById('sf-team-3').value = "";
       document.getElementById('sf-team-4').value = "";
-      
+
       if (bet.semifinals) {
         const sfTeams = bet.semifinals.split(',').map(t => t.trim());
         if (sfTeams[0]) document.getElementById('sf-team-1').value = sfTeams[0];
@@ -226,7 +226,7 @@ export const Special = {
         if (sfTeams[2]) document.getElementById('sf-team-3').value = sfTeams[2];
         if (sfTeams[3]) document.getElementById('sf-team-4').value = sfTeams[3];
       }
-      
+
       // 2 Chung kết
       document.getElementById('f-team-1').value = "";
       document.getElementById('f-team-2').value = "";
@@ -256,19 +256,18 @@ export const Special = {
       return;
     }
 
-    // Sắp xếp theo tên/email
-    bets.sort((a, b) => (a.displayName || a.email).localeCompare(b.displayName || b.email));
+    // Sắp xếp theo thời gian (Mới nhất -> Cũ nhất)
+    bets.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
     const currentUser = Auth.getUser();
     const isLocked = this.isLocked();
 
     bets.forEach(bet => {
       const tr = document.createElement('tr');
-      
+
       const userCell = `
         <div class="user-cell">
           <strong>${bet.displayName || bet.email.split('@')[0]}</strong>
-          <span style="font-size:0.7rem; color:var(--text-muted); display:block;">${bet.email}</span>
         </div>
       `;
 
@@ -301,12 +300,12 @@ export const Special = {
 
     form.dataset.mode = 'edit';
     form.dataset.editingTimestamp = bet.timestamp;
-    
+
     this.fillForm(bet);
 
     btnSave.textContent = 'Cập nhật dự đoán';
     btnCancel.classList.remove('hidden');
-    
+
     form.scrollIntoView({ behavior: 'smooth', block: 'center' });
   },
 
@@ -318,12 +317,12 @@ export const Special = {
 
     form.removeAttribute('data-mode');
     form.removeAttribute('data-editing-timestamp');
-    
+
     form.reset();
 
     btnSave.textContent = 'Lưu dự đoán đặc biệt';
     btnCancel.classList.add('hidden');
-    
+
     this.loadSpecialBets();
   },
 

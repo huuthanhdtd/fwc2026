@@ -1,0 +1,14 @@
+{
+  "name": "fwc2026-discord-bot",
+  "version": "1.0.0",
+  "description": "Discord Bot for FIFA World Cup 2026 internal team betting app",
+  "main": "bot.js",
+  "type": "module",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5"
+  }
+}

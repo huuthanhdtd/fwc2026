@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +9,14 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css">
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
+
 <body>
 
   <!-- Loading Overlay -->
@@ -55,7 +59,12 @@
           <span id="user-email" class="user-email">...</span>
         </div>
         <button id="btn-logout" class="btn-logout" title="Đăng xuất">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
         </button>
       </div>
     </header>
@@ -78,23 +87,32 @@
         </div>
       </section>
 
-      <!-- Tab: Cược Ngoài / Cược Khác -->
+      <!-- Tab: Dự đoán Ngoài / Dự đoán Khác -->
       <section id="tab-special" class="tab-panel">
         <div class="special-bets-container">
           <div class="special-bets-card">
-            <h2 class="special-bets-title">🏆 Cược Đặc Biệt</h2>
-            <p class="special-bets-subtitle">Dự đoán 4 đội bán kết, 2 đội chung kết, nhà vô địch & vua phá lưới. Cược sẽ được khóa ngay khi giải đấu chính thức bắt đầu.</p>
-            
+            <h2 class="special-bets-title">🏆 Dự đoán Đặc Biệt</h2>
+            <p class="special-bets-subtitle">Dự đoán 4 đội bán kết, 2 đội chung kết, nhà vô địch & vua phá lưới. Dự đoán
+              sẽ được khóa ngay khi giải đấu chính thức bắt đầu.</p>
+
             <form id="special-bets-form" class="special-bets-form">
               <div class="form-group-grid">
                 <!-- 4 Bán Kết -->
                 <div class="special-bet-col">
                   <div class="form-section-title">⚽ Top 4 Bán Kết</div>
                   <div class="select-group--vertical">
-                    <select id="sf-team-1" class="special-select"><option value="">Chọn đội 1...</option></select>
-                    <select id="sf-team-2" class="special-select"><option value="">Chọn đội 2...</option></select>
-                    <select id="sf-team-3" class="special-select"><option value="">Chọn đội 3...</option></select>
-                    <select id="sf-team-4" class="special-select"><option value="">Chọn đội 4...</option></select>
+                    <select id="sf-team-1" class="special-select">
+                      <option value="">Chọn đội 1...</option>
+                    </select>
+                    <select id="sf-team-2" class="special-select">
+                      <option value="">Chọn đội 2...</option>
+                    </select>
+                    <select id="sf-team-3" class="special-select">
+                      <option value="">Chọn đội 3...</option>
+                    </select>
+                    <select id="sf-team-4" class="special-select">
+                      <option value="">Chọn đội 4...</option>
+                    </select>
                   </div>
                 </div>
 
@@ -102,8 +120,12 @@
                 <div class="special-bet-col">
                   <div class="form-section-title">⚔️ 2 Chung Kết</div>
                   <div class="select-group--vertical">
-                    <select id="f-team-1" class="special-select"><option value="">Chọn đội 1...</option></select>
-                    <select id="f-team-2" class="special-select"><option value="">Chọn đội 2...</option></select>
+                    <select id="f-team-1" class="special-select">
+                      <option value="">Chọn đội 1...</option>
+                    </select>
+                    <select id="f-team-2" class="special-select">
+                      <option value="">Chọn đội 2...</option>
+                    </select>
                   </div>
                 </div>
 
@@ -111,7 +133,9 @@
                 <div class="special-bet-col">
                   <div class="form-section-title">👑 Đội Vô Địch</div>
                   <div class="select-group--vertical">
-                    <select id="champion-team" class="special-select"><option value="">Chọn đội vô địch...</option></select>
+                    <select id="champion-team" class="special-select">
+                      <option value="">Chọn đội vô địch...</option>
+                    </select>
                   </div>
                 </div>
 
@@ -119,15 +143,19 @@
                 <div class="special-bet-col">
                   <div class="form-section-title">👟 Vua Phá Lưới</div>
                   <div class="input-group">
-                    <input type="text" id="top-scorer-input" class="special-input" style="width: 100%;" placeholder="Nhập tên cầu thủ... (Ví dụ: Mbappe)">
+                    <input type="text" id="top-scorer-input" class="special-input" style="width: 100%;"
+                      placeholder="Nhập tên cầu thủ... (Ví dụ: Mbappe)">
                   </div>
                 </div>
               </div>
 
               <div id="special-bets-deadline-msg" class="deadline-msg"></div>
               <div class="special-form-actions" style="display: flex; gap: 10px; margin-top: 15px;">
-                <button type="submit" id="btn-save-special" class="btn-save-special" style="flex: 1;">Lưu dự đoán đặc biệt</button>
-                <button type="button" id="btn-cancel-special" class="btn-cancel-special hidden" style="background: var(--bg-surface-hover); border: 1px solid var(--border); color: var(--text-primary); padding: 10px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: var(--transition);">Hủy sửa</button>
+                <button type="submit" id="btn-save-special" class="btn-save-special" style="flex: 1;">Lưu dự đoán đặc
+                  biệt</button>
+                <button type="button" id="btn-cancel-special" class="btn-cancel-special hidden"
+                  style="background: var(--bg-surface-hover); border: 1px solid var(--border); color: var(--text-primary); padding: 10px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: var(--transition);">Hủy
+                  sửa</button>
               </div>
             </form>
           </div>
@@ -158,7 +186,7 @@
         </div>
       </section>
 
-      <!-- Tab: Lịch Sử Đặt Cược -->
+      <!-- Tab: Lịch Sử Đặt Dự đoán -->
       <section id="tab-history" class="tab-panel">
         <div class="filter-bar">
           <div class="filter-group">
@@ -174,7 +202,7 @@
         </div>
 
         <div id="history-list" class="history-list">
-          <div class="no-data">Không tìm thấy dữ liệu đặt cược nào.</div>
+          <div class="no-data">Không tìm thấy dữ liệu đặt dự đoán nào.</div>
         </div>
       </section>
 
@@ -184,7 +212,7 @@
         <div class="leaderboard-tabs">
           <button class="leaderboard-tab-btn active" data-type="win">Thắng</button>
           <button class="leaderboard-tab-btn" data-type="lost">Thua</button>
-          <button class="leaderboard-tab-btn" data-type="do">Tổng cược</button>
+          <button class="leaderboard-tab-btn" data-type="do">Tổng dự đoán</button>
           <button class="leaderboard-tab-btn" data-type="khomau">Khô máu</button>
           <button class="leaderboard-tab-btn" data-type="hp">Hiệp phụ</button>
         </div>
@@ -221,7 +249,7 @@
       </button>
       <button class="nav-item" data-tab="special">
         <span class="nav-icon">⭐</span>
-        <span class="nav-label">Cược khác</span>
+        <span class="nav-label">Dự đoán khác</span>
       </button>
       <button class="nav-item" data-tab="history">
         <span class="nav-icon">📝</span>
@@ -255,7 +283,8 @@
       <!-- Đội bóng & tỉ số -->
       <div class="match-card__teams">
         <div class="team team--home">
-          <img class="team__flag" src="" alt="Home Flag" onerror="this.src='https://api.fifa.com/api/v3/picture/flags-sq-2/TBD';">
+          <img class="team__flag" src="" alt="Home Flag"
+            onerror="this.src='https://api.fifa.com/api/v3/picture/flags-sq-2/TBD';">
           <span class="team__name">Đang cập nhật</span>
         </div>
         <div class="match-card__score-display">
@@ -265,7 +294,8 @@
         </div>
         <div class="team team--away">
           <span class="team__name">Đang cập nhật</span>
-          <img class="team__flag" src="" alt="Away Flag" onerror="this.src='https://api.fifa.com/api/v3/picture/flags-sq-2/TBD';">
+          <img class="team__flag" src="" alt="Away Flag"
+            onerror="this.src='https://api.fifa.com/api/v3/picture/flags-sq-2/TBD';">
         </div>
       </div>
 
@@ -274,7 +304,7 @@
         Hiệp phụ/Penalty
       </div>
 
-      <!-- Đặt cược nhanh -->
+      <!-- Đặt dự đoán nhanh -->
       <div class="match-card__bet-section">
         <div class="bet-input-row">
           <select class="bet-type-select">
@@ -287,18 +317,18 @@
           <button class="bet-cancel-btn hidden">✖</button>
         </div>
         <div class="bet-my-prediction">
-          <!-- Hiển thị cược của tôi -->
+          <!-- Hiển thị dự đoán của tôi -->
         </div>
       </div>
 
-      <!-- Danh sách cược của team -->
+      <!-- Danh sách dự đoán của team -->
       <div class="match-card__bets-expansion">
         <div class="bets-header">
           <span>👥 Dự đoán của cả team</span>
           <span class="bets-count-badge">0</span>
         </div>
         <div class="bets-list hidden">
-          <!-- JS render danh sách cược -->
+          <!-- JS render danh sách dự đoán -->
         </div>
       </div>
 
@@ -308,4 +338,5 @@
   <!-- JS Script module -->
   <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>

@@ -32,11 +32,11 @@ export const Special = {
       e.preventDefault();
 
       if (this.isLocked()) {
-        App.showToast('Giải đấu đã bắt đầu! Đã khóa cược ngoài.', 'error');
+        App.showToast('Giải đấu đã bắt đầu! Đã khóa dự đoán ngoài.', 'error');
         return;
       }
 
-      // Lấy dữ liệu cược
+      // Lấy dữ liệu dự đoán
       const sf1 = document.getElementById('sf-team-1').value;
       const sf2 = document.getElementById('sf-team-2').value;
       const sf3 = document.getElementById('sf-team-3').value;
@@ -91,7 +91,7 @@ export const Special = {
           this.loadSpecialBets();
         }
       } else {
-        App.showToast(res ? res.message : 'Lỗi không xác định khi lưu cược đặc biệt giải.', 'error');
+        App.showToast(res ? res.message : 'Lỗi không xác định khi lưu dự đoán đặc biệt giải.', 'error');
       }
     });
   },
@@ -110,7 +110,7 @@ export const Special = {
       this.deadline = new Date(Matches.allMatches[0].date);
     }
 
-    // 3. Cập nhật giao diện Trạng thái khóa cược
+    // 3. Cập nhật giao diện Trạng thái khóa dự đoán
     this.updateLockStatus();
 
     // 4. Lấy tất cả dự đoán đặc biệt của team từ API
@@ -123,7 +123,7 @@ export const Special = {
       this.renderTeamSpecialBets(allBets);
     } else {
       document.getElementById('special-bets-rows').innerHTML = `
-        <tr><td colspan="6" class="no-data">Không thể tải dữ liệu cược đặc biệt của cả team.</td></tr>
+        <tr><td colspan="6" class="no-data">Không thể tải dữ liệu dự đoán đặc biệt của cả team.</td></tr>
       `;
     }
   },
@@ -175,7 +175,7 @@ export const Special = {
     if (!deadlineMsg) return;
 
     if (isLocked) {
-      deadlineMsg.textContent = '❌ Giải đấu đã chính thức khởi tranh. Cược ngoài đã khóa!';
+      deadlineMsg.textContent = '❌ Giải đấu đã chính thức khởi tranh. Dự đoán ngoài đã khóa!';
       deadlineMsg.className = 'deadline-msg locked';
       if (form) {
         form.querySelectorAll('.special-select, .special-input').forEach(el => el.disabled = true);
@@ -206,7 +206,7 @@ export const Special = {
           deadlineText = `${hours}:${minutes} ngày ${day}/${month}/${this.deadline.getFullYear()}`;
         }
       }
-      deadlineMsg.textContent = `⏳ Hạn cuối lưu cược ngoài: trước ${deadlineText} (trận khai mạc giải bắt đầu).`;
+      deadlineMsg.textContent = `⏳ Hạn cuối lưu dự đoán ngoài: trước ${deadlineText} (trận khai mạc giải bắt đầu).`;
       deadlineMsg.className = 'deadline-msg open';
     }
   },
@@ -242,7 +242,7 @@ export const Special = {
       // Vua phá lưới
       document.getElementById('top-scorer-input').value = bet.topScorer || "";
     } catch (e) {
-      console.warn('Lỗi khi tự động điền form cược ngoài:', e);
+      console.warn('Lỗi khi tự động điền form dự đoán ngoài:', e);
     }
   },
 
@@ -252,7 +252,7 @@ export const Special = {
 
     tbody.innerHTML = '';
     if (bets.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="no-data">Chưa có ai đặt cược đặc biệt.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="no-data">Chưa có ai đặt dự đoán đặc biệt.</td></tr>`;
       return;
     }
 
@@ -336,7 +336,7 @@ export const Special = {
         const btn = e.target;
         const timestamp = btn.dataset.timestamp;
 
-        if (confirm('Bạn có chắc chắn muốn xóa dự đoán cược ngoài này không?')) {
+        if (confirm('Bạn có chắc chắn muốn xóa dự đoán dự đoán ngoài này không?')) {
           App.showLoading();
           const res = await API.deleteSpecialBet(timestamp);
           App.hideLoading();
@@ -344,7 +344,7 @@ export const Special = {
             App.showToast(res.message, 'success');
             await this.loadSpecialBets();
           } else {
-            App.showToast(res ? res.message : 'Lỗi không thể xóa dự đoán cược ngoài.', 'error');
+            App.showToast(res ? res.message : 'Lỗi không thể xóa dự đoán dự đoán ngoài.', 'error');
           }
         }
       }
@@ -356,7 +356,7 @@ export const Special = {
         const bet = this.allBets.find(b => b.timestamp === timestamp);
         if (bet) {
           this.enterEditMode(bet);
-          App.showToast('Đã điền cược cần sửa vào form phía trên.', 'info');
+          App.showToast('Đã điền dự đoán cần sửa vào form phía trên.', 'info');
         }
       }
     });

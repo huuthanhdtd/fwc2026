@@ -1,7 +1,7 @@
 // ============================================================
 // FWC 2026 BETTING WEBAPP - GOOGLE APPS SCRIPT BACKEND
 // ============================================================
-// Tệp này xử lý toàn bộ logic backend cho ứng dụng cá cược
+// Tệp này xử lý toàn bộ logic backend cho ứng dụng cá dự đoán
 // World Cup 2026. Sử dụng Google Sheets làm cơ sở dữ liệu.
 // ============================================================
 
@@ -326,7 +326,7 @@ function getMatchesCachedOrSync() {
 }
 
 /**
- * Lấy danh sách cược ngoài (Special Bets) của tất cả người chơi.
+ * Lấy danh sách dự đoán ngoài (Special Bets) của tất cả người chơi.
  */
 function getSpecialBets() {
   try {
@@ -346,15 +346,15 @@ function getSpecialBets() {
       });
     }
     
-    return { success: true, message: 'Lấy danh sách cược ngoài thành công', data: list };
+    return { success: true, message: 'Lấy danh sách dự đoán ngoài thành công', data: list };
     
   } catch (error) {
-    return { success: false, message: 'Lỗi lấy cược ngoài: ' + error.message, data: null };
+    return { success: false, message: 'Lỗi lấy dự đoán ngoài: ' + error.message, data: null };
   }
 }
 
 /**
- * Đặt cược ngoài (Special Bets) cho người chơi.
+ * Đặt dự đoán ngoài (Special Bets) cho người chơi.
  */
 function placeSpecialBet(data) {
   try {
@@ -362,7 +362,7 @@ function placeSpecialBet(data) {
       return { success: false, message: 'Thiếu email', data: null };
     }
 
-    // Kiểm tra thời gian khóa cược ngoài (trước khi trận đầu tiên bắt đầu)
+    // Kiểm tra thời gian khóa dự đoán ngoài (trước khi trận đầu tiên bắt đầu)
     var scheduleSheet = getOrCreateSheet('Schedule', SHEET_HEADERS['Schedule']);
     var scheduleData = scheduleSheet.getDataRange().getValues();
     var firstMatchStartTime = null;
@@ -380,7 +380,7 @@ function placeSpecialBet(data) {
     if (firstMatchStartTime) {
       var now = new Date();
       if (now > firstMatchStartTime) {
-        return { success: false, message: '❌ Giải đấu đã chính thức khởi tranh. Bạn không thể đặt hoặc sửa cược ngoài!', data: null };
+        return { success: false, message: '❌ Giải đấu đã chính thức khởi tranh. Bạn không thể đặt hoặc sửa dự đoán ngoài!', data: null };
       }
     }
     
@@ -412,19 +412,19 @@ function placeSpecialBet(data) {
     
     if (foundRow > 0) {
       sheet.getRange(foundRow, 1, 1, rowData.length).setValues([rowData]);
-      return { success: true, message: '✅ Đã cập nhật cược ngoài giải thành công!', data: null };
+      return { success: true, message: '✅ Đã cập nhật dự đoán ngoài giải thành công!', data: null };
     } else {
       sheet.appendRow(rowData);
-      return { success: true, message: '✅ Đã lưu cược ngoài giải thành công!', data: null };
+      return { success: true, message: '✅ Đã lưu dự đoán ngoài giải thành công!', data: null };
     }
     
   } catch (error) {
-    return { success: false, message: 'Lỗi lưu cược ngoài: ' + error.message, data: null };
+    return { success: false, message: 'Lỗi lưu dự đoán ngoài: ' + error.message, data: null };
   }
 }
 
 /**
- * Xóa một dòng dự đoán cược ngoài (Special Bet) của user theo timestamp.
+ * Xóa một dòng dự đoán dự đoán ngoài (Special Bet) của user theo timestamp.
  */
 function deleteSpecialBet(data) {
   try {
@@ -432,7 +432,7 @@ function deleteSpecialBet(data) {
       return { success: false, message: 'Thiếu thông tin bắt buộc (email, timestamp)', data: null };
     }
     
-    // Kiểm tra thời gian khóa cược ngoài (trước khi trận đầu tiên bắt đầu)
+    // Kiểm tra thời gian khóa dự đoán ngoài (trước khi trận đầu tiên bắt đầu)
     var scheduleSheet = getOrCreateSheet('Schedule', SHEET_HEADERS['Schedule']);
     var scheduleData = scheduleSheet.getDataRange().getValues();
     var firstMatchStartTime = null;
@@ -450,7 +450,7 @@ function deleteSpecialBet(data) {
     if (firstMatchStartTime) {
       var now = new Date();
       if (now > firstMatchStartTime) {
-        return { success: false, message: '❌ Giải đấu đã chính thức khởi tranh. Bạn không thể xóa cược ngoài!', data: null };
+        return { success: false, message: '❌ Giải đấu đã chính thức khởi tranh. Bạn không thể xóa dự đoán ngoài!', data: null };
       }
     }
     
@@ -470,19 +470,19 @@ function deleteSpecialBet(data) {
     
     if (foundRow > 0) {
       sheet.deleteRow(foundRow);
-      return { success: true, message: '✅ Đã xóa dự đoán cược ngoài thành công!', data: null };
+      return { success: true, message: '✅ Đã xóa dự đoán dự đoán ngoài thành công!', data: null };
     } else {
-      return { success: false, message: '❌ Không tìm thấy cược ngoài cần xóa hoặc cược không thuộc về bạn!', data: null };
+      return { success: false, message: '❌ Không tìm thấy dự đoán ngoài cần xóa hoặc dự đoán không thuộc về bạn!', data: null };
     }
     
   } catch (error) {
-    return { success: false, message: 'Lỗi khi xóa cược ngoài: ' + error.message, data: null };
+    return { success: false, message: 'Lỗi khi xóa dự đoán ngoài: ' + error.message, data: null };
   }
 }
 
 /**
- * Đặt cược cho một trận đấu.
- * Nếu đã tồn tại cược cho cùng user + match + betType, sẽ cập nhật.
+ * Đặt dự đoán cho một trận đấu.
+ * Nếu đã tồn tại dự đoán cho cùng user + match + betType, sẽ cập nhật.
  *
  * @param {Object} data - {email, displayName, matchId, matchNumber, betType, scores, homeTeam, awayTeam, matchDate}
  * @returns {Object} {success, message, data}
@@ -497,7 +497,7 @@ function placeBet(data) {
     // Validate betType
     var validTypes = ['do', 'khomau', 'hp'];
     if (validTypes.indexOf(data.betType) === -1) {
-      return { success: false, message: 'Loại cược không hợp lệ. Chỉ chấp nhận: do, khomau, hp', data: null };
+      return { success: false, message: 'Loại dự đoán không hợp lệ. Chỉ chấp nhận: do, khomau, hp', data: null };
     }
 
     // Validate định dạng scores (n-n hoặc n-n,n-n,...)
@@ -509,7 +509,7 @@ function placeBet(data) {
       }
     }
 
-    // 0. Kiểm tra thời gian khóa cược từ sheet Schedule
+    // 0. Kiểm tra thời gian khóa dự đoán từ sheet Schedule
     var scheduleSheet = getOrCreateSheet('Schedule', SHEET_HEADERS['Schedule']);
     var scheduleData = scheduleSheet.getDataRange().getValues();
     var matchStartStr = null;
@@ -528,7 +528,7 @@ function placeBet(data) {
       var matchStartTime = new Date(matchStartStr);
       // Nếu status là 3, 4, 12, 10 hoặc đã quá giờ bắt đầu
       if (matchStatus === 3 || matchStatus === 4 || matchStatus === 12 || matchStatus === 10 || now > matchStartTime) {
-        return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể đặt hoặc sửa cược!', data: null };
+        return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán!', data: null };
       }
     }
 
@@ -537,10 +537,10 @@ function placeBet(data) {
     var overwrite = data.overwrite !== false; // default to true if not specified
     
     if (overwrite) {
-      // 1. Xóa tất cả các cược cũ cùng matchId + betType của user này
+      // 1. Xóa tất cả các dự đoán cũ cùng matchId + betType của user này
       deleteBetRows(data.email, data.matchId, data.betType);
     } else {
-      // 1. Lấy danh sách cược hiện tại của user này cho trận đấu và loại cược này để tránh thêm trùng
+      // 1. Lấy danh sách dự đoán hiện tại của user này cho trận đấu và loại dự đoán này để tránh thêm trùng
       var allData = sheet.getDataRange().getValues();
       var existingScores = [];
       for (var i = 1; i < allData.length; i++) {
@@ -571,7 +571,7 @@ function placeBet(data) {
       scoresArr = newScoresArr; // Chỉ thêm các tỉ số mới
     }
     
-    // 2. Thêm từng cược mới làm một dòng riêng biệt với dấu nháy đơn để ép kiểu plain text
+    // 2. Thêm từng dự đoán mới làm một dòng riêng biệt với dấu nháy đơn để ép kiểu plain text
     var timestamp = new Date().toISOString();
     for (var j = 0; j < scoresArr.length; j++) {
       var rowData = [
@@ -596,12 +596,12 @@ function placeBet(data) {
     };
 
   } catch (error) {
-    return { success: false, message: 'Lỗi khi đặt cược: ' + error.message, data: null };
+    return { success: false, message: 'Lỗi khi đặt dự đoán: ' + error.message, data: null };
   }
 }
 
 /**
- * Xóa tất cả dòng cược của user cụ thể cho một trận đấu và loại cược.
+ * Xóa tất cả dòng dự đoán của user cụ thể cho một trận đấu và loại dự đoán.
  */
 function deleteBetRows(email, matchId, betType) {
   try {
@@ -619,7 +619,7 @@ function deleteBetRows(email, matchId, betType) {
       }
     }
   } catch (e) {
-    Logger.log('Lỗi khi xóa dòng cược cũ: ' + e.message);
+    Logger.log('Lỗi khi xóa dòng dự đoán cũ: ' + e.message);
   }
 }
 
@@ -640,7 +640,7 @@ function changeBet(data) {
       return { success: false, message: 'Định dạng tỷ số không hợp lệ. Đúng format: n-n', data: null };
     }
 
-    // 0. Kiểm tra thời gian khóa cược từ sheet Schedule
+    // 0. Kiểm tra thời gian khóa dự đoán từ sheet Schedule
     var scheduleSheet = getOrCreateSheet('Schedule', SHEET_HEADERS['Schedule']);
     var scheduleData = scheduleSheet.getDataRange().getValues();
     var matchStartStr = null;
@@ -659,7 +659,7 @@ function changeBet(data) {
       var matchStartTime = new Date(matchStartStr);
       // Nếu status là 3, 4, 12, 10 hoặc đã quá giờ bắt đầu
       if (matchStatus === 3 || matchStatus === 4 || matchStatus === 12 || matchStatus === 10 || now > matchStartTime) {
-        return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể đặt hoặc sửa cược!', data: null };
+        return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán!', data: null };
       }
     }
 
@@ -702,7 +702,7 @@ function changeBet(data) {
 }
 
 /**
- * Lấy danh sách cược của người dùng.
+ * Lấy danh sách dự đoán của người dùng.
  *
  * @param {string} email - Email người dùng
  * @param {string} filter - 'all', matchId cụ thể, hoặc ngày 'M/d'
@@ -785,7 +785,7 @@ function getMyBets(email, filter) {
 }
 
 /**
- * Lấy tất cả cược cho một trận đấu cụ thể.
+ * Lấy tất cả dự đoán cho một trận đấu cụ thể.
  *
  * @param {string} matchId - ID trận đấu
  * @returns {Object} {success, message, data}
@@ -820,7 +820,7 @@ function getMatchBets(matchId) {
 }
 
 /**
- * Lấy tất cả cược (dùng cho trang tổng quan).
+ * Lấy tất cả dự đoán (dùng cho trang tổng quan).
  *
  * @returns {Object} {success, message, data}
  */
@@ -958,14 +958,14 @@ function processCommand(message, email, displayName) {
       success: false,
       message: '❓ Lệnh không hợp lệ: "' + command + '"\n\n' +
         '📖 Danh sách lệnh:\n' +
-        '/do #<trận> <tỷ số> - Đăng ký cược 90\' (Ví dụ: /do #1 2-1)\n' +
+        '/do #<trận> <tỷ số> - Đăng ký dự đoán 90\' (Ví dụ: /do #1 2-1)\n' +
         '/change #<trận> <cũ> <mới> - Sửa tỷ số (Ví dụ: /change #1 2-1 1-1)\n' +
-        '/khomau #<trận> <tỷ số> - Đặt cược Khô máu\n' +
-        '/hp #<trận> <tỷ số> - Đặt cược Hiệp phụ\n' +
+        '/khomau #<trận> <tỷ số> - Đặt dự đoán Khô máu\n' +
+        '/hp #<trận> <tỷ số> - Đặt dự đoán Hiệp phụ\n' +
         '/today - Xem lịch đấu hôm nay\n' +
         '/M/d - Xem lịch đấu ngày cụ thể (Ví dụ: /6/12)\n' +
         '/upcoming - Xem các trận sắp tới\n' +
-        '/me [all/#<trận>/M/d] - Xem đăng ký cược của bạn\n' +
+        '/me [all/#<trận>/M/d] - Xem đăng ký dự đoán của bạn\n' +
         '/top [do/win/lost/khomau/hp] - Xem bảng xếp hạng\n' +
         '/bet - Xem tài khoản\n' +
         '/bk <đội 1>, <đội 2>, <đội 3>, <đội 4> - Dự đoán 4 đội Bán kết\n' +
@@ -981,15 +981,15 @@ function processCommand(message, email, displayName) {
 }
 
 /**
- * Xử lý các lệnh cược đặc biệt (Special Bets) từ chat/Discord.
+ * Xử lý các lệnh dự đoán đặc biệt (Special Bets) từ chat/Discord.
  */
 function handleSpecialBetCommand(email, displayName, field, value) {
   try {
     if (!value) {
-      return { success: false, message: '❌ Vui lòng nhập thông tin cược đặc biệt!', data: null };
+      return { success: false, message: '❌ Vui lòng nhập thông tin dự đoán đặc biệt!', data: null };
     }
 
-    // Kiểm tra thời gian khóa cược ngoài (trước khi trận khai mạc bắt đầu)
+    // Kiểm tra thời gian khóa dự đoán ngoài (trước khi trận khai mạc bắt đầu)
     var scheduleSheet = getOrCreateSheet('Schedule', SHEET_HEADERS['Schedule']);
     var scheduleData = scheduleSheet.getDataRange().getValues();
     var firstMatchStartTime = null;
@@ -1005,20 +1005,20 @@ function handleSpecialBetCommand(email, displayName, field, value) {
     }
     
     if (firstMatchStartTime && new Date() > firstMatchStartTime) {
-      return { success: false, message: '❌ Giải đấu đã chính thức khởi tranh. Bạn không thể đặt hoặc sửa cược ngoài!', data: null };
+      return { success: false, message: '❌ Giải đấu đã chính thức khởi tranh. Bạn không thể đặt hoặc sửa dự đoán ngoài!', data: null };
     }
 
     // Validate số lượng đội đối với bán kết / chung kết
     if (field === 'semifinals') {
       var teams = value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
       if (teams.length !== 4) {
-        return { success: false, message: '❌ Lệnh cược bán kết yêu cầu nhập đúng 4 đội cách nhau bằng dấu phẩy!\nVí dụ: /bk Đức, Pháp, Anh, Ý', data: null };
+        return { success: false, message: '❌ Lệnh dự đoán bán kết yêu cầu nhập đúng 4 đội cách nhau bằng dấu phẩy!\nVí dụ: /bk Đức, Pháp, Anh, Ý', data: null };
       }
       value = teams.join(', ');
     } else if (field === 'finals') {
       var teams = value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
       if (teams.length !== 2) {
-        return { success: false, message: '❌ Lệnh cược chung kết yêu cầu nhập đúng 2 đội cách nhau bằng dấu phẩy!\nVí dụ: /ck Đức, Pháp', data: null };
+        return { success: false, message: '❌ Lệnh dự đoán chung kết yêu cầu nhập đúng 2 đội cách nhau bằng dấu phẩy!\nVí dụ: /ck Đức, Pháp', data: null };
       }
       value = teams.join(', ');
     }
@@ -1028,7 +1028,7 @@ function handleSpecialBetCommand(email, displayName, field, value) {
     var latestRowIndex = -1;
     var latestRowData = null;
 
-    // Tìm dòng cược gần nhất của user này
+    // Tìm dòng dự đoán gần nhất của user này
     for (var i = allData.length - 1; i >= 1; i--) {
       if (allData[i][1] === email) {
         latestRowIndex = i + 1;
@@ -1043,7 +1043,7 @@ function handleSpecialBetCommand(email, displayName, field, value) {
     };
 
     if (latestRowIndex > 0) {
-      // Cập nhật dòng cược ngoài hiện tại
+      // Cập nhật dòng dự đoán ngoài hiện tại
       data.timestamp = String(latestRowData[0]);
       data.semifinals = latestRowData[3];
       data.finals = latestRowData[4];
@@ -1053,7 +1053,7 @@ function handleSpecialBetCommand(email, displayName, field, value) {
       // Ghi đè trường tương ứng
       data[field] = value;
     } else {
-      // Tạo cược ngoài mới
+      // Tạo dự đoán ngoài mới
       data.semifinals = '';
       data.finals = '';
       data.champion = '';
@@ -1065,12 +1065,12 @@ function handleSpecialBetCommand(email, displayName, field, value) {
     return placeSpecialBet(data);
 
   } catch (error) {
-    return { success: false, message: '❌ Lỗi cược ngoài: ' + error.message, data: null };
+    return { success: false, message: '❌ Lỗi dự đoán ngoài: ' + error.message, data: null };
   }
 }
 
 /**
- * Xử lý lệnh đặt cược: /do, /khomau, /hp
+ * Xử lý lệnh đặt dự đoán: /do, /khomau, /hp
  * Format: /do #matchId n1-n1 [n2-n2 n3-n3 ...]
  */
 function handleBetCommand(parts, email, displayName, betType) {
@@ -1288,7 +1288,7 @@ function handleUpcomingCommand() {
 }
 
 /**
- * Xử lý lệnh /bet - Thông tin tài khoản cá cược
+ * Xử lý lệnh /bet - Thông tin tài khoản cá dự đoán
  */
 function handleBetInfoCommand(email, parts) {
   try {
@@ -1314,7 +1314,7 @@ function handleBetInfoCommand(email, parts) {
     var profile = getUserProfile(email);
     var displayName = profile.success && profile.data ? profile.data.displayName : email;
 
-    var message = '🎰 Thông tin cá cược - ' + displayName + '\n' +
+    var message = '🎰 Thông tin cá dự đoán - ' + displayName + '\n' +
       '━━━━━━━━━━━━━━━\n' +
       '📊 Tổng dự đoán: ' + stats.total + '\n' +
       '⚽ Dự đoán thường (đô): ' + stats.do + '\n' +
@@ -1542,7 +1542,7 @@ function getUserProfile(email) {
       return { success: false, message: 'Không tìm thấy người dùng', data: null };
     }
 
-    // Thống kê cá cược
+    // Thống kê cá dự đoán
     var betsSheet = getOrCreateSheet('Bets', SHEET_HEADERS['Bets']);
     var betsData = betsSheet.getDataRange().getValues();
     var stats = { totalBets: 0, doCount: 0, khomauCount: 0, hpCount: 0, matchesCount: 0 };
@@ -1625,11 +1625,11 @@ function createJsonResponse(data) {
 }
 
 /**
- * Tìm hàng cược đã tồn tại cho user + match + betType.
+ * Tìm hàng dự đoán đã tồn tại cho user + match + betType.
  *
  * @param {string} email - Email người dùng
  * @param {string} matchId - ID trận đấu
- * @param {string} betType - Loại cược (do/khomau/hp)
+ * @param {string} betType - Loại dự đoán (do/khomau/hp)
  * @returns {number} Số hàng (1-indexed) nếu tìm thấy, -1 nếu không
  */
 function findBetRow(email, matchId, betType) {
@@ -1753,7 +1753,7 @@ function testFifaApi() {
  */
 function testProcessCommand() {
   var tests = [
-    { cmd: '/do #5 2-1 3-0', desc: 'Đặt cược' },
+    { cmd: '/do #5 2-1 3-0', desc: 'Đặt dự đoán' },
     { cmd: '/me all', desc: 'Xem dự đoán' },
     { cmd: '/today', desc: 'Trận hôm nay' },
     { cmd: '/top do', desc: 'Bảng xếp hạng' },

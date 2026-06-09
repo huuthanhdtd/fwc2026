@@ -10,11 +10,11 @@ export const Matches = {
     this.setupEventListeners();
     await this.loadMatches();
     this.renderDateBar();
-    
+
     // Mặc định chọn ngày hôm nay. Nếu hôm nay nằm ngoài giải đấu, chọn ngày đầu tiên có trận đấu
     const todayStr = this.getTodayDateStr();
     const hasMatchesToday = this.allMatches.some(m => m.localDateOnly === todayStr);
-    
+
     if (hasMatchesToday) {
       this.filterByDate(todayStr);
     } else if (this.allMatches.length > 0) {
@@ -27,26 +27,26 @@ export const Matches = {
   },
 
   setupEventListeners() {
-    // Event delegation cho đặt cược từ Card
+    // Event delegation cho đặt dự đoán từ Card
     document.getElementById('matches-list').addEventListener('click', async (e) => {
-      // Nút đặt cược
+      // Nút đặt dự đoán
       if (e.target.classList.contains('bet-btn')) {
         const card = e.target.closest('.match-card');
         const matchId = card.dataset.matchId;
         const matchNumber = card.dataset.matchNumber;
         const input = card.querySelector('.bet-input');
         const select = card.querySelector('.bet-type-select');
-        
+
         await this.handlePlaceBet(matchId, matchNumber, input, select, card);
       }
 
-      // Click vào cược của tôi để sửa nhanh
+      // Click vào dự đoán của tôi để sửa nhanh
       if (e.target.closest('.my-pred-tag--editable')) {
         const tag = e.target.closest('.my-pred-tag--editable');
         const score = tag.dataset.score;
         const type = tag.dataset.type;
         const card = tag.closest('.match-card');
-        
+
         this.enterEditMode(card, score, type);
         App.showToast('Đã bật chế độ chỉnh sửa. Nhập tỷ số mới và ấn Cập nhật hoặc Hủy.', 'info');
       }
@@ -66,7 +66,7 @@ export const Matches = {
       }
     });
 
-    // Enter key cho input cược
+    // Enter key cho input dự đoán
     document.getElementById('matches-list').addEventListener('keypress', async (e) => {
       if (e.key === 'Enter' && e.target.classList.contains('bet-input')) {
         const card = e.target.closest('.match-card');
@@ -164,7 +164,7 @@ export const Matches = {
 
       // Tạo date object ở GMT+7 để lấy thứ trong tuần chính xác
       const dateObj = new Date(`${dateStr}T12:00:00+07:00`);
-      
+
       const weekdayFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Ho_Chi_Minh', weekday: 'short' });
       const weekdayStr = weekdayFormatter.format(dateObj); // returns "Sun", "Mon", ...
       const daysOfWeekMap = {
@@ -192,7 +192,7 @@ export const Matches = {
 
   filterByDate(dateStr) {
     this.selectedDate = dateStr;
-    
+
     // Cập nhật active pill
     document.querySelectorAll('.date-pill').forEach(pill => {
       if (pill.dataset.date === dateStr) {
@@ -221,14 +221,14 @@ export const Matches = {
 
     matches.forEach(match => {
       const card = template.content.cloneNode(true).querySelector('.match-card');
-      
+
       card.dataset.matchId = match.id;
       card.dataset.matchNumber = match.matchNumber;
 
       // Meta info
       card.querySelector('.match-card__group').textContent = match.group || match.stage;
       card.querySelector('.match-card__number').textContent = `Trận #${match.matchNumber}`;
-      
+
       // Status
       const statusBadge = card.querySelector('.match-card__status');
       statusBadge.textContent = this.getStatusText(match.status);
@@ -242,7 +242,7 @@ export const Matches = {
       // Teams
       card.querySelector('.team--home .team__name').textContent = match.home.name;
       card.querySelector('.team--home .team__flag').src = match.home.flag;
-      
+
       card.querySelector('.team--away .team__name').textContent = match.away.name;
       card.querySelector('.team--away .team__flag').src = match.away.flag;
 
@@ -271,7 +271,7 @@ export const Matches = {
         extraStatus.classList.add('hidden');
       }
 
-      // Ẩn phần nhập cược nhanh nếu trận đấu đã diễn ra hoặc kết thúc
+      // Ẩn phần nhập dự đoán nhanh nếu trận đấu đã diễn ra hoặc kết thúc
       const now = new Date();
       const matchStartTime = new Date(match.date);
       const isStarted = match.status === 3 || match.status === 4 || match.status === 12 || match.status === 10 || now > matchStartTime;
@@ -279,7 +279,7 @@ export const Matches = {
         card.querySelector('.match-card__bet-section').classList.add('hidden');
       }
 
-      // Load cược của trận đấu này
+      // Load dự đoán của trận đấu này
       this.loadMatchBetsAndPredictions(match, card);
 
       container.appendChild(card);
@@ -297,7 +297,7 @@ export const Matches = {
       const bets = res.data;
       badgeCount.textContent = bets.length;
 
-      // Sắp xếp cược theo tỉ số (scores) thay vì theo thời gian đặt (timestamp)
+      // Sắp xếp dự đoán theo tỉ số (scores) thay vì theo thời gian đặt (timestamp)
       bets.sort((a, b) => {
         const scoreCompare = a.scores.localeCompare(b.scores);
         if (scoreCompare !== 0) return scoreCompare;
@@ -307,7 +307,7 @@ export const Matches = {
       // Hiển thị dự đoán của cả team theo 3 cột: 90', khô máu, hiệp phụ
       betsListContainer.innerHTML = '';
       if (bets.length === 0) {
-        betsListContainer.innerHTML = '<div class="no-data" style="grid-column: 1/-1; padding: 10px; font-size: 0.75rem;">Chưa có ai đặt cược.</div>';
+        betsListContainer.innerHTML = '<div class="no-data" style="grid-column: 1/-1; padding: 10px; font-size: 0.75rem;">Chưa có ai đặt dự đoán.</div>';
       } else {
         const betsByType = {
           do: [],
@@ -345,13 +345,13 @@ export const Matches = {
         const colDo = createColumn("90 Phút", betsByType.do, "bets-col--do");
         betsListContainer.appendChild(colDo);
 
-        // Cột Khô máu (chỉ hiển thị nếu có cược)
+        // Cột Khô máu (chỉ hiển thị nếu có dự đoán)
         if (betsByType.khomau.length > 0) {
           const colKhomau = createColumn("🩸 Khô máu", betsByType.khomau, "bets-col--khomau");
           betsListContainer.appendChild(colKhomau);
         }
 
-        // Cột Hiệp phụ (chỉ hiển thị nếu có cược)
+        // Cột Hiệp phụ (chỉ hiển thị nếu có dự đoán)
         if (betsByType.hp.length > 0) {
           const colHp = createColumn("⭐ Hiệp phụ", betsByType.hp, "bets-col--hp");
           betsListContainer.appendChild(colHp);
@@ -364,9 +364,9 @@ export const Matches = {
         const myBets = bets.filter(b => b.email === myUser.email);
         myPredContainer.innerHTML = '';
         if (myBets.length > 0) {
-          myPredContainer.innerHTML = 'Cược của bạn: ';
-          
-          // Nhóm cược của mình theo betType
+          myPredContainer.innerHTML = 'Dự đoán của bạn: ';
+
+          // Nhóm dự đoán của mình theo betType
           const grouped = {};
           myBets.forEach(b => {
             if (!grouped[b.betType]) {
@@ -382,16 +382,16 @@ export const Matches = {
             span.title = 'Nhấp để chỉnh sửa dự đoán này';
             span.dataset.score = scoresStr;
             span.dataset.type = betType;
-            
+
             let typeLabel = '90\'';
             if (betType === 'khomau') typeLabel = '🩸';
             if (betType === 'hp') typeLabel = '⭐';
-            
+
             span.innerHTML = `${scoresStr} (${typeLabel}) <span class="edit-icon">✏️</span>`;
             myPredContainer.appendChild(span);
           });
         } else {
-          myPredContainer.textContent = 'Bạn chưa đặt cược trận này.';
+          myPredContainer.textContent = 'Bạn chưa đặt dự đoán trận này.';
         }
       }
     }
@@ -467,7 +467,7 @@ export const Matches = {
       this.exitEditMode(card);
       this.loadMatchBetsAndPredictions(match, card);
     } else {
-      App.showToast(res ? res.message : 'Lỗi không xác định khi đặt cược.', 'error');
+      App.showToast(res ? res.message : 'Lỗi không xác định khi đặt dự đoán.', 'error');
     }
   },
 
@@ -510,7 +510,7 @@ export const Matches = {
       const options = { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false, day: '2-digit', month: '2-digit', year: 'numeric' };
       const formatter = new Intl.DateTimeFormat('vi-VN', options);
       const parts = formatter.formatToParts(date);
-      
+
       let hour = '00', minute = '00', day = '01', month = '01', year = '2026';
       parts.forEach(p => {
         if (p.type === 'hour') hour = p.value;

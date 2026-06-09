@@ -18,7 +18,7 @@ export const Leaderboard = {
       tab.addEventListener('click', (e) => {
         tabs.forEach(t => t.classList.remove('active'));
         e.target.classList.add('active');
-        
+
         const type = e.target.dataset.type;
         this.currentType = type;
         this.loadLeaderboard(type);
@@ -57,7 +57,7 @@ export const Leaderboard = {
     const rest = data.slice(3);
 
     const order = [1, 0, 2];
-    
+
     order.forEach(idx => {
       const player = top3[idx];
       if (!player) return;
@@ -102,7 +102,7 @@ export const Leaderboard = {
       case 'lost':
         return 'Thua';
       case 'do':
-        return 'Tổng cược';
+        return 'Tổng dự đoán';
       case 'khomau':
         return 'Khô máu';
       case 'hp':

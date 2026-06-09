@@ -1,6 +1,6 @@
 # Hướng Dẫn Cấu Hình & Sử Dụng Bot Discord FWC 2026
 
-Bot Discord này cho phép các thành viên trong team đặt cược, sửa cược, xem lịch thi đấu và dự đoán cược đặc biệt trực tiếp từ Discord. Dữ liệu sẽ được đồng bộ hóa tức thời về hệ thống Google Sheets đã có của bạn.
+Bot Discord này cho phép các thành viên trong team đặt dự đoán, sửa dự đoán, xem lịch thi đấu và dự đoán dự đoán đặc biệt trực tiếp từ Discord. Dữ liệu sẽ được đồng bộ hóa tức thời về hệ thống Google Sheets đã có của bạn.
 
 ---
 
@@ -13,7 +13,7 @@ Bot Discord này cho phép các thành viên trong team đặt cược, sửa c�
    - Click **Reset Token** và sao chép mã Token hiển thị (đây chính là `DISCORD_TOKEN` của bạn). Hãy bảo mật mã này!
    - Kéo xuống phần **Privileged Gateway Intents** và **BẮT BUỘC KÍCH HOẠT** hai quyền sau:
      - **Guild Members Intent** (Để đọc tên hiển thị của thành viên trong server).
-     - **Message Content Intent** (Để đọc nội dung các lệnh cược dạng `/`).
+     - **Message Content Intent** (Để đọc nội dung các lệnh dự đoán dạng `/`).
    - Nhấn **Save Changes** để lưu cấu hình.
 
 ---
@@ -68,24 +68,24 @@ Bot Discord này cho phép các thành viên trong team đặt cược, sửa c�
 ## 📖 Hướng Dẫn Sử Dụng Trên Discord
 
 ### 1. Liên kết tài khoản (Bắt buộc trước khi chơi)
-Mỗi thành viên cần liên kết tài khoản Discord với email Gmail đã dùng trên webapp để bot ghi nhận đúng danh tính cược:
+Mỗi thành viên cần liên kết tài khoản Discord với email Gmail đã dùng trên webapp để bot ghi nhận đúng danh tính dự đoán:
 - Lệnh: `/link <email của bạn>` (hoặc `/dangky <email>`, `/register <email>`)
 - Ví dụ: `/link hoangtuan@gmail.com`
 
 ---
 
-### 2. Danh sách các lệnh cược & tương tác
+### 2. Danh sách các lệnh dự đoán & tương tác
 
 | Chức năng | Cú pháp lệnh | Ví dụ thực tế |
 | :--- | :--- | :--- |
-| **Đăng ký cược 90'** | `/do #<số trận> <tỷ số>` | `/do #1 2-1` hoặc nhiều tỷ số `/do #1 2-1,3-0` |
-| **Sửa tỷ số cược** | `/change #<số trận> <cũ> <mới>` | `/change #1 2-1 1-1` |
-| **Đặt cược Khô máu** | `/khomau #<số trận> <tỷ số>` | `/khomau #1 3-2` |
-| **Đặt cược Hiệp phụ** | `/hp #<số trận> <tỷ số>` | `/hp #1 1-0` |
+| **Đăng ký dự đoán 90'** | `/do #<số trận> <tỷ số>` | `/do #1 2-1` hoặc nhiều tỷ số `/do #1 2-1,3-0` |
+| **Sửa tỷ số dự đoán** | `/change #<số trận> <cũ> <mới>` | `/change #1 2-1 1-1` |
+| **Đặt dự đoán Khô máu** | `/khomau #<số trận> <tỷ số>` | `/khomau #1 3-2` |
+| **Đặt dự đoán Hiệp phụ** | `/hp #<số trận> <tỷ số>` | `/hp #1 1-0` |
 | **Xem lịch đấu hôm nay** | `/today` | `/today` |
 | **Xem lịch đấu ngày khác** | `/M/d` (tháng/ngày) | `/6/12` (Xem lịch ngày 12 tháng 6) |
 | **Xem các trận sắp tới** | `/upcoming` | `/upcoming` |
-| **Xem cược của bản thân** | `/me [all / #trận / M/d]` | `/me #1` hoặc `/me 6/12` hoặc `/me all` |
+| **Xem dự đoán của bản thân** | `/me [all / #trận / M/d]` | `/me #1` hoặc `/me 6/12` hoặc `/me all` |
 | **Xem bảng xếp hạng** | `/top [do / win / lost / khomau / hp]` | `/top win` |
 | **Xem thông tin tài khoản**| `/bet` | `/bet` |
 | **Dự đoán 4 đội Bán kết**| `/bk <đội 1>, <đội 2>, <đội 3>, <đội 4>`| `/bk Đức, Pháp, Anh, Brazil` |
@@ -95,4 +95,4 @@ Mỗi thành viên cần liên kết tài khoản Discord với email Gmail đã
 
 > 💡 **Lưu ý:**
 > - Các dấu gạch chéo `/` trong bảng trên là ký tự text thông thường gõ vào chat. Bạn chỉ cần gõ đúng cú pháp và gửi tin nhắn, Bot sẽ tự động phát hiện và xử lý.
-> - Hạn chót khóa cược đặc biệt (`/bk`, `/ck`, `/vd`, `/vpl`) tự động kiểm tra và khóa ngay khi trận khai mạc bắt đầu giống hệt trên Web.
+> - Hạn chót khóa dự đoán đặc biệt (`/bk`, `/ck`, `/vd`, `/vpl`) tự động kiểm tra và khóa ngay khi trận khai mạc bắt đầu giống hệt trên Web.

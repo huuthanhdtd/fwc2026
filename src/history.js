@@ -46,9 +46,9 @@ export const History = {
         if (betType === 'hp') betTypeName = 'Hiệp phụ';
 
         const newScores = prompt(`Chỉnh sửa dự đoán [${betTypeName}] cho trận này.\nTỉ số cũ: ${oldScores}\nNhập tỉ số mới (VD: 2-1):`, oldScores);
-        
+
         if (newScores === null) return;
-        
+
         const scoreVal = newScores.trim();
         if (!scoreVal) {
           App.showToast('Vui lòng nhập tỷ số!', 'warning');
@@ -68,12 +68,12 @@ export const History = {
         }
 
         const res = await API.placeBet(matchId, matchNumber, scoreVal, betType, homeTeam, awayTeam, matchDate);
-        
+
         if (res && res.success) {
           App.showToast(res.message, 'success');
           await this.loadHistory();
         } else {
-          App.showToast(res ? res.message : 'Lỗi không xác định khi cập nhật cược.', 'error');
+          App.showToast(res ? res.message : 'Lỗi không xác định khi cập nhật dự đoán.', 'error');
         }
       }
     });
@@ -86,11 +86,11 @@ export const History = {
     Matches.allMatches.forEach(match => {
       const option = document.createElement('option');
       option.value = match.id;
-      
+
       const homeName = match.home.abbr || match.home.name;
       const awayName = match.away.abbr || match.away.name;
       option.textContent = `Trận #${match.matchNumber}: ${homeName} vs ${awayName}`;
-      
+
       selectMatch.appendChild(option);
     });
   },
@@ -104,7 +104,7 @@ export const History = {
       this.myBets = res.data;
       this.applyFilters();
     } else {
-      document.getElementById('history-list').innerHTML = '<div class="no-data">Không thể tải lịch sử đặt cược.</div>';
+      document.getElementById('history-list').innerHTML = '<div class="no-data">Không thể tải lịch sử đặt dự đoán.</div>';
     }
   },
 
@@ -130,7 +130,7 @@ export const History = {
     container.innerHTML = '';
 
     if (bets.length === 0) {
-      container.innerHTML = '<div class="no-data">Không tìm thấy dữ liệu đặt cược phù hợp.</div>';
+      container.innerHTML = '<div class="no-data">Không tìm thấy dữ liệu đặt dự đoán phù hợp.</div>';
       return;
     }
 
@@ -139,7 +139,7 @@ export const History = {
       card.className = 'history-card';
 
       const actualMatch = Matches.allMatches.find(m => m.id === String(bet.matchId));
-      
+
       let matchDateStr = bet.matchDate ? App.formatDate(bet.matchDate) : '';
       let matchInfo = `Trận #${bet.matchId} • Vòng bảng`;
       let scoreText = '- : -';
@@ -149,7 +149,7 @@ export const History = {
       let isStarted = false;
       if (actualMatch) {
         matchInfo = `Trận #${actualMatch.matchNumber} • ${actualMatch.group || actualMatch.stage}`;
-        
+
         const d = new Date(actualMatch.date);
         const dateOptions = { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric' };
         const dateParts = new Intl.DateTimeFormat('vi-VN', dateOptions).formatToParts(d);
@@ -169,7 +169,7 @@ export const History = {
           if (actualMatch.status === 10) {
             const actualScore = `${actualMatch.home.score}-${actualMatch.away.score}`;
             const predictions = bet.scores.split(',').map(s => s.trim());
-            
+
             const isWin = predictions.includes(actualScore);
             if (isWin) {
               statusText = 'Thắng ✅';

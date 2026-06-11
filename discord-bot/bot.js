@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Partials } from 'discord.js';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -50,10 +50,12 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-  ]
+    GatewayIntentBits.DirectMessages, // Hỗ trợ Direct Messages (DM)
+  ],
+  partials: [Partials.Channel] // Yêu cầu để nhận diện tin nhắn trong DM ở v14
 });
 
-client.once('ready', () => {
+client.once('clientReady', () => {
   console.log(`🤖 Bot Discord đã online! Đăng nhập thành công: ${client.user.tag}`);
 });
 
@@ -61,7 +63,16 @@ client.on('messageCreate', async (message) => {
   // Bỏ qua tin nhắn từ chính bot hoặc các bot khác
   if (message.author.bot) return;
 
-  const content = message.content.trim();
+  const content = message.content ? message.content.trim() : '';
+  const location = message.guild ? `Server: ${message.guild.name}` : 'DM (Tin nhắn riêng)';
+  
+  console.log(`📩 Nhận tin nhắn từ ${message.author.tag} (${location}): "${content}"`);
+
+  if (!content) {
+    console.warn(`⚠️ Nội dung tin nhắn trống. Nếu bạn đang gõ lệnh mà bot nhận được chuỗi trống, vui lòng kiểm tra xem bạn đã bật "Message Content Intent" trong Discord Developer Portal chưa.`);
+    return;
+  }
+
   // Bỏ qua nếu không bắt đầu bằng ký tự gạch chéo /
   if (!content.startsWith('/')) return;
 

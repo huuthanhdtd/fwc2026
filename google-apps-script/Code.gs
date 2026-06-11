@@ -43,8 +43,9 @@ function doGet(e) {
 
       case 'getMatchBets':
         var matchId = e.parameter.matchId;
+        var bulk = e.parameter.bulk === 'true';
         if (!matchId) return createCorsOutput({ success: false, message: 'Thiếu matchId', data: null });
-        result = getMatchBets(matchId);
+        result = getMatchBets(matchId, bulk);
         break;
 
       case 'getSpecialBets':
@@ -790,12 +791,39 @@ function getMyBets(email, filter) {
  * @param {string} matchId - ID trận đấu
  * @returns {Object} {success, message, data}
  */
-function getMatchBets(matchId) {
+function getMatchBets(matchId, bulk) {
   try {
     var sheet = getOrCreateSheet('Bets', SHEET_HEADERS['Bets']);
     var allData = sheet.getDataRange().getValues();
-    var matchBets = [];
 
+    if (bulk) {
+      var matchIds = String(matchId).split(',').map(function(id) { return id.trim(); });
+      var bulkBets = {};
+      for (var k = 0; k < matchIds.length; k++) {
+        bulkBets[matchIds[k]] = [];
+      }
+
+      for (var i = 1; i < allData.length; i++) {
+        var rowMatchId = String(allData[i][3]);
+        if (bulkBets.hasOwnProperty(rowMatchId)) {
+          bulkBets[rowMatchId].push({
+            timestamp: allData[i][0],
+            email: allData[i][1],
+            displayName: allData[i][2],
+            betType: allData[i][5],
+            scores: allData[i][6]
+          });
+        }
+      }
+
+      return {
+        success: true,
+        message: 'Lấy danh sách dự đoán gộp thành công',
+        data: bulkBets
+      };
+    }
+
+    var matchBets = [];
     for (var i = 1; i < allData.length; i++) {
       if (String(allData[i][3]) === String(matchId)) {
         matchBets.push({

@@ -208,13 +208,23 @@ export const Matches = {
     this.renderMatches(filtered);
   },
 
-  renderMatches(matches) {
+  async renderMatches(matches) {
     const container = document.getElementById('matches-list');
     container.innerHTML = '';
 
     if (matches.length === 0) {
       container.innerHTML = '<div class="no-matches-placeholder">Không có trận đấu nào trong ngày này.</div>';
       return;
+    }
+
+    // Fetch all bets for these matches in bulk
+    let bulkBets = {};
+    if (matches.length > 0) {
+      const matchIds = matches.map(m => m.id).join(',');
+      const res = await API.getMatchBets(matchIds, true);
+      if (res && res.success && res.data) {
+        bulkBets = res.data;
+      }
     }
 
     const template = document.getElementById('match-card-template');
@@ -280,21 +290,29 @@ export const Matches = {
       }
 
       // Load dự đoán của trận đấu này
-      this.loadMatchBetsAndPredictions(match, card);
+      const bets = bulkBets[match.id] || [];
+      this.loadMatchBetsAndPredictions(match, card, bets);
 
       container.appendChild(card);
     });
   },
 
-  async loadMatchBetsAndPredictions(match, card) {
+  async loadMatchBetsAndPredictions(match, card, bets = null) {
     const betsListContainer = card.querySelector('.bets-list');
     const badgeCount = card.querySelector('.bets-count-badge');
     const myPredContainer = card.querySelector('.bet-my-prediction');
 
-    // Gọi API để lấy danh sách dự đoán
-    const res = await API.getMatchBets(match.id);
-    if (res && res.success && res.data) {
-      const bets = res.data;
+    if (!bets) {
+      // Gọi API để lấy danh sách dự đoán
+      const res = await API.getMatchBets(match.id);
+      if (res && res.success && res.data) {
+        bets = res.data;
+      } else {
+        bets = [];
+      }
+    }
+
+    if (bets) {
       badgeCount.textContent = bets.length;
 
       // Sắp xếp dự đoán theo tỉ số (scores) thay vì theo thời gian đặt (timestamp)

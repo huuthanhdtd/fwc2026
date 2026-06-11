@@ -108,8 +108,8 @@ export const API = {
     return this.call('getMyBets', { filter });
   },
 
-  async getMatchBets(matchId) {
-    return this.call('getMatchBets', { matchId });
+  async getMatchBets(matchId, isBulk = false) {
+    return this.call('getMatchBets', { matchId, bulk: isBulk });
   },
 
 

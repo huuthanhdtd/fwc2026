@@ -11,19 +11,33 @@ export const Matches = {
     await this.loadMatches();
     this.renderDateBar();
 
-    // Mặc định chọn ngày hôm nay. Nếu hôm nay nằm ngoài giải đấu, chọn ngày đầu tiên có trận đấu
     const todayStr = this.getTodayDateStr();
-    const hasMatchesToday = this.allMatches.some(m => m.localDateOnly === todayStr);
+    const todayMatches = this.allMatches.filter(m => m.localDateOnly === todayStr);
+    const hasMatchesToday = todayMatches.length > 0;
+    const allTodayMatchesFinished = hasMatchesToday && todayMatches.every(m => this.isMatchFinished(m));
 
-    if (hasMatchesToday) {
-      this.filterByDate(todayStr);
-    } else if (this.allMatches.length > 0) {
-      // Chọn ngày có trận đấu sớm nhất
-      const firstMatchDate = this.allMatches[0].localDateOnly;
-      this.filterByDate(firstMatchDate);
+    let targetDate = todayStr;
+
+    if (hasMatchesToday && !allTodayMatchesFinished) {
+      targetDate = todayStr;
     } else {
-      this.filterByDate(todayStr);
+      // Tìm ngày đầu tiên có trận đấu chưa kết thúc sau ngày hôm nay
+      const nextMatch = this.allMatches.find(m => m.localDateOnly > todayStr && !this.isMatchFinished(m));
+      if (nextMatch) {
+        targetDate = nextMatch.localDateOnly;
+      } else {
+        // Nếu không có trận tiếp theo chưa kết thúc, tìm trận chưa kết thúc bất kỳ
+        const anyActiveMatch = this.allMatches.find(m => !this.isMatchFinished(m));
+        if (anyActiveMatch) {
+          targetDate = anyActiveMatch.localDateOnly;
+        } else if (this.allMatches.length > 0) {
+          // Nếu tất cả trận đã kết thúc, chọn ngày của trận cuối cùng
+          targetDate = this.allMatches[this.allMatches.length - 1].localDateOnly;
+        }
+      }
     }
+
+    this.filterByDate(targetDate);
   },
 
   setupEventListeners() {
@@ -148,6 +162,16 @@ export const Matches = {
     };
   },
 
+  isMatchFinished(match) {
+    const now = new Date();
+    const matchStartTime = new Date(match.date);
+    return (
+      match.status === 10 || 
+      (match.home.score !== null && match.away.score !== null) || 
+      (now > matchStartTime && (now - matchStartTime > 130 * 60 * 1000))
+    );
+  },
+
   renderDateBar() {
     const pillsContainer = document.getElementById('date-pills');
     pillsContainer.innerHTML = '';
@@ -240,9 +264,21 @@ export const Matches = {
       card.querySelector('.match-card__number').textContent = `Trận #${match.matchNumber}`;
 
       // Status
+      let displayStatus = match.status;
+      if (this.isMatchFinished(match)) {
+        displayStatus = 10;
+      } else if (displayStatus !== 3 && displayStatus !== 4 && displayStatus !== 12) {
+        // Nếu chưa bắt đầu nhưng đã quá giờ đấu (mà chưa đủ 130 phút) -> Đang diễn ra
+        const now = new Date();
+        const matchStartTime = new Date(match.date);
+        if (now > matchStartTime) {
+          displayStatus = 3;
+        }
+      }
+
       const statusBadge = card.querySelector('.match-card__status');
-      statusBadge.textContent = this.getStatusText(match.status);
-      statusBadge.className = `match-card__status ${this.getStatusClass(match.status)}`;
+      statusBadge.textContent = this.getStatusText(displayStatus);
+      statusBadge.className = `match-card__status ${this.getStatusClass(displayStatus)}`;
 
       // Time & Stadium
       const timeStr = this.formatMatchTime(match.localDate);
@@ -347,9 +383,13 @@ export const Matches = {
             <div class="bets-col__content"></div>
           `;
           const content = col.querySelector('.bets-col__content');
+          const isFinished = this.isMatchFinished(match);
           typeBets.forEach(bet => {
+            const isCorrect = isFinished && match.home.score !== null && match.away.score !== null && 
+                              bet.scores.replace(/\s+/g, '') === `${match.home.score}-${match.away.score}`.replace(/\s+/g, '');
+
             const chip = document.createElement('div');
-            chip.className = 'bet-item-chip';
+            chip.className = `bet-item-chip ${isCorrect ? 'bet-item-chip--correct' : ''}`;
             chip.innerHTML = `
               <span class="bet-chip-score">${bet.scores}</span>
               <span class="bet-chip-user" title="${bet.displayName || bet.email}">${bet.displayName || bet.email.split('@')[0]}</span>
@@ -393,10 +433,18 @@ export const Matches = {
             grouped[b.betType].push(b.scores);
           });
 
+          const isFinished = this.isMatchFinished(match);
           Object.keys(grouped).forEach(betType => {
             const scoresStr = grouped[betType].join(', ');
+            
+            let hasCorrect = false;
+            if (isFinished && match.home.score !== null && match.away.score !== null) {
+              const actualScoreStr = `${match.home.score}-${match.away.score}`.replace(/\s+/g, '');
+              hasCorrect = grouped[betType].some(score => score.replace(/\s+/g, '') === actualScoreStr);
+            }
+
             const span = document.createElement('span');
-            span.className = 'my-pred-tag my-pred-tag--editable';
+            span.className = `my-pred-tag my-pred-tag--editable ${hasCorrect ? 'my-pred-tag--correct' : ''}`;
             span.title = 'Nhấp để chỉnh sửa dự đoán này';
             span.dataset.score = scoresStr;
             span.dataset.type = betType;

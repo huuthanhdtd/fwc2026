@@ -804,10 +804,9 @@ body {
 
 .bet-chip-user {
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 65px;
+  text-align: right;
+  padding-left: 8px;
+  word-break: break-word;
 }
 
 .bet-chip-score {
@@ -1572,4 +1571,20 @@ body {
 .user-cell {
   display: flex;
   flex-direction: column;
+}
+
+/* HIGHLIGHT CORRECT PREDICTIONS */
+.my-pred-tag.my-pred-tag--correct {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: var(--success) !important;
+  color: var(--success) !important;
+}
+
+.bet-item-chip.bet-item-chip--correct {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: var(--success) !important;
+}
+
+.bet-item-chip.bet-item-chip--correct .bet-chip-score {
+  color: var(--success) !important;
 }

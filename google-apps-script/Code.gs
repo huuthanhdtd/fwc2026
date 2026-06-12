@@ -314,6 +314,7 @@ function getMatchesCachedOrSync() {
   var apiResponse = fetchFifaApiRaw();
   if (apiResponse && apiResponse.Results) {
     saveMatchesToSheet(apiResponse.Results);
+    updateResultsSheet(apiResponse.Results);
     return { success: true, message: 'Đồng bộ từ FIFA API thành công', data: apiResponse };
   }
   
@@ -325,6 +326,130 @@ function getMatchesCachedOrSync() {
   
   return { success: false, message: 'Không có dữ liệu trận đấu và không thể gọi FIFA API', data: null };
 }
+
+/**
+ * Cập nhật kết quả các trận đấu đã kết thúc vào sheet Results.
+ */
+function updateResultsSheet(results) {
+  try {
+    var sheet = getOrCreateSheet('Results', SHEET_HEADERS['Results']);
+    var allData = sheet.getDataRange().getValues();
+    
+    // Tạo map các matchId đã tồn tại trong sheet Results để tránh trùng lặp
+    var existingRows = {}; // matchId -> row index (1-indexed)
+    for (var i = 1; i < allData.length; i++) {
+      existingRows[String(allData[i][0])] = i + 1;
+    }
+    
+    var updatedCount = 0;
+    var addedCount = 0;
+    
+    for (var j = 0; j < results.length; j++) {
+      var m = results[j];
+      
+      // Chỉ xử lý các trận đấu đã kết thúc (MatchStatus === 10)
+      if (m.MatchStatus === 10) {
+        var matchId = String(m.IdMatch);
+        var matchNumber = m.MatchNumber;
+        
+        var homeScore = m.HomeTeamScore !== null ? m.HomeTeamScore : '';
+        var awayScore = m.AwayTeamScore !== null ? m.AwayTeamScore : '';
+        var extraHomeScore = '';
+        var extraAwayScore = '';
+        var penaltyHome = m.HomeTeamPenaltyScore !== null ? m.HomeTeamPenaltyScore : '';
+        var penaltyAway = m.AwayTeamPenaltyScore !== null ? m.AwayTeamPenaltyScore : '';
+        var status = 'completed';
+        
+        // Kiểm tra nếu trận đấu có hiệp phụ (ResultType === 2) hoặc penalty
+        var isExtraTime = (m.ResultType === 2 || m.HomeTeamPenaltyScore !== null || m.AwayTeamPenaltyScore !== null);
+        if (isExtraTime) {
+          extraHomeScore = homeScore;
+          extraAwayScore = awayScore;
+          
+          // Ước lượng tỷ số 90 phút (bắt buộc phải hòa để vào hiệp phụ)
+          var drawScore = Math.min(Number(homeScore), Number(awayScore));
+          homeScore = drawScore;
+          awayScore = drawScore;
+        }
+        
+        var rowData = [
+          matchId,
+          matchNumber,
+          homeScore,
+          awayScore,
+          extraHomeScore,
+          extraAwayScore,
+          penaltyHome,
+          penaltyAway,
+          status
+        ];
+        
+        if (existingRows[matchId]) {
+          var rowIndex = existingRows[matchId];
+          // Kiểm tra xem dữ liệu có thay đổi hay không trước khi ghi đè
+          var currentRow = allData[rowIndex - 1];
+          var needsUpdate = false;
+          for (var c = 0; c < rowData.length; c++) {
+            if (String(currentRow[c]) !== String(rowData[c])) {
+              needsUpdate = true;
+              break;
+            }
+          }
+          if (needsUpdate) {
+            sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+            updatedCount++;
+          }
+        } else {
+          sheet.appendRow(rowData);
+          addedCount++;
+        }
+      }
+    }
+    
+    Logger.log('Cập nhật sheet Results thành công: Thêm mới ' + addedCount + ', Cập nhật ' + updatedCount);
+    
+  } catch (error) {
+    Logger.log('Lỗi khi cập nhật sheet Results: ' + error.message);
+  }
+}
+
+/**
+ * Hàm chạy định kỳ từ trigger để đồng bộ lịch thi đấu và kết quả.
+ */
+function triggerSyncMatchesAndResults() {
+  Logger.log('Bắt đầu đồng bộ định kỳ...');
+  var apiResponse = fetchFifaApiRaw();
+  if (apiResponse && apiResponse.Results) {
+    saveMatchesToSheet(apiResponse.Results);
+    updateResultsSheet(apiResponse.Results);
+    Logger.log('Đồng bộ định kỳ hoàn tất.');
+  } else {
+    Logger.log('Đồng bộ định kỳ thất bại: Không lấy được dữ liệu từ FIFA API.');
+  }
+}
+
+/**
+ * Thiết lập trigger chạy định kỳ mỗi 10 phút.
+ * Chạy hàm này một lần từ Script Editor để cài đặt.
+ */
+function setupSyncTrigger() {
+  // Xóa các trigger cũ cùng tên để tránh trùng lặp
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'triggerSyncMatchesAndResults') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  
+  // Tạo trigger mới chạy mỗi 10 phút
+  ScriptApp.newTrigger('triggerSyncMatchesAndResults')
+    .timeBased()
+    .everyMinutes(10)
+    .create();
+  
+  Logger.log('✅ Đã thiết lập trigger chạy triggerSyncMatchesAndResults mỗi 10 phút.');
+}
+
 
 /**
  * Lấy danh sách dự đoán ngoài (Special Bets) của tất cả người chơi.
@@ -993,7 +1118,7 @@ function getLeaderboard(type) {
     });
 
     // Tạo tin nhắn hiển thị
-    var typeNames = { 'do': '🏆 Đô nhiều nhất', 'win': '🥇 Thắng nhiều nhất', 'lost': '💀 Thua nhiều nhất', 'khomau': '🔥 Khô máu nhiều nhất', 'hp': '⏱️ Hiệp phụ nhiều nhất' };
+    var typeNames = { 'do': '🏆 90\' nhiều nhất', 'win': '🥇 Thắng nhiều nhất', 'lost': '💀 Thua nhiều nhất', 'khomau': '🔥 Khô máu nhiều nhất', 'hp': '⏱️ Hiệp phụ nhiều nhất' };
     var title = typeNames[type] || '🏆 Bảng xếp hạng';
 
     var medalEmojis = ['🥇', '🥈', '🥉'];

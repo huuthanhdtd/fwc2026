@@ -179,6 +179,10 @@ export const Special = {
       deadlineMsg.className = 'deadline-msg locked';
       if (form) {
         form.querySelectorAll('.special-select, .special-input').forEach(el => el.disabled = true);
+        const grid = form.querySelector('.form-group-grid');
+        const actions = form.querySelector('.special-form-actions');
+        if (grid) grid.classList.add('hidden');
+        if (actions) actions.classList.add('hidden');
       }
       if (btn) btn.disabled = true;
     } else {
@@ -208,6 +212,14 @@ export const Special = {
       }
       deadlineMsg.textContent = `⏳ Hạn cuối lưu dự đoán ngoài: trước ${deadlineText} (trận khai mạc giải bắt đầu).`;
       deadlineMsg.className = 'deadline-msg open';
+      if (form) {
+        form.querySelectorAll('.special-select, .special-input').forEach(el => el.disabled = false);
+        const grid = form.querySelector('.form-group-grid');
+        const actions = form.querySelector('.special-form-actions');
+        if (grid) grid.classList.remove('hidden');
+        if (actions) actions.classList.remove('hidden');
+      }
+      if (btn) btn.disabled = false;
     }
   },
 

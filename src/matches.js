@@ -126,8 +126,20 @@ export const Matches = {
     let localDateOnly = '';
     try {
       const dateObj = new Date(m.Date);
+      
+      // Lấy giờ và phút ở múi giờ Asia/Ho_Chi_Minh
+      const hourFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Ho_Chi_Minh', hour: 'numeric', hour12: false });
+      const minFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Ho_Chi_Minh', minute: 'numeric' });
+      const vnHour = parseInt(hourFormatter.format(dateObj), 10);
+      const vnMin = parseInt(minFormatter.format(dateObj), 10);
+      
+      let finalDateObj = dateObj;
+      if (vnHour * 60 + vnMin > 13 * 60) {
+        finalDateObj = new Date(dateObj.getTime() + 24 * 60 * 60 * 1000);
+      }
+
       const formatter = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' });
-      localDateOnly = formatter.format(dateObj);
+      localDateOnly = formatter.format(finalDateObj);
     } catch (e) {
       console.warn('Lỗi format GMT+7 localDateOnly:', e);
       localDateOnly = (m.LocalDate || m.Date).substring(0, 10);
@@ -166,8 +178,7 @@ export const Matches = {
     const now = new Date();
     const matchStartTime = new Date(match.date);
     return (
-      match.status === 10 || 
-      (match.home.score !== null && match.away.score !== null) || 
+      match.status === 10 ||
       (now > matchStartTime && (now - matchStartTime > 130 * 60 * 1000))
     );
   },
@@ -385,8 +396,8 @@ export const Matches = {
           const content = col.querySelector('.bets-col__content');
           const isFinished = this.isMatchFinished(match);
           typeBets.forEach(bet => {
-            const isCorrect = isFinished && match.home.score !== null && match.away.score !== null && 
-                              bet.scores.replace(/\s+/g, '') === `${match.home.score}-${match.away.score}`.replace(/\s+/g, '');
+            const isCorrect = isFinished && match.home.score !== null && match.away.score !== null &&
+              bet.scores.replace(/\s+/g, '') === `${match.home.score}-${match.away.score}`.replace(/\s+/g, '');
 
             const chip = document.createElement('div');
             chip.className = `bet-item-chip ${isCorrect ? 'bet-item-chip--correct' : ''}`;
@@ -436,7 +447,7 @@ export const Matches = {
           const isFinished = this.isMatchFinished(match);
           Object.keys(grouped).forEach(betType => {
             const scoresStr = grouped[betType].join(', ');
-            
+
             let hasCorrect = false;
             if (isFinished && match.home.score !== null && match.away.score !== null) {
               const actualScoreStr = `${match.home.score}-${match.away.score}`.replace(/\s+/g, '');

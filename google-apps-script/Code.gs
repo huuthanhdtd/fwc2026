@@ -348,7 +348,7 @@ function updateResultsSheet(results) {
       var m = results[j];
       
       // Chỉ xử lý các trận đấu đã kết thúc (MatchStatus === 10)
-      if (m.MatchStatus === 10) {
+      if (m.MatchStatus === 10 || m.MatchStatus === 0) {
         var matchId = String(m.IdMatch);
         var matchNumber = m.MatchNumber;
         

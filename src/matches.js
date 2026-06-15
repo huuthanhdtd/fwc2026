@@ -126,13 +126,13 @@ export const Matches = {
     let localDateOnly = '';
     try {
       const dateObj = new Date(m.Date);
-      
+
       // Lấy giờ và phút ở múi giờ Asia/Ho_Chi_Minh
       const hourFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Ho_Chi_Minh', hour: 'numeric', hour12: false });
       const minFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Ho_Chi_Minh', minute: 'numeric' });
       const vnHour = parseInt(hourFormatter.format(dateObj), 10);
       const vnMin = parseInt(minFormatter.format(dateObj), 10);
-      
+
       let finalDateObj = dateObj;
       if (vnHour * 60 + vnMin > 13 * 60) {
         finalDateObj = new Date(dateObj.getTime() + 24 * 60 * 60 * 1000);
@@ -178,7 +178,7 @@ export const Matches = {
     const now = new Date();
     const matchStartTime = new Date(match.date);
     return (
-      match.status === 10 ||
+      match.status === 0 || match.status === 10 ||
       (now > matchStartTime && (now - matchStartTime > 130 * 60 * 1000))
     );
   },

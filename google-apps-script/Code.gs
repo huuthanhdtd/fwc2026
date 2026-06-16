@@ -14,7 +14,7 @@ var SHEET_HEADERS = {
   'Bets': ['timestamp', 'email', 'displayName', 'matchId', 'matchNumber', 'betType', 'scores', 'homeTeam', 'awayTeam', 'matchDate'],
   'Users': ['email', 'displayName', 'photoUrl', 'joinDate', 'lastActive'],
   'Results': ['matchId', 'matchNumber', 'homeScore', 'awayScore', 'extraHomeScore', 'extraAwayScore', 'penaltyHome', 'penaltyAway', 'status'],
-  'Schedule': ['matchId', 'matchNumber', 'date', 'localDate', 'localDateOnly', 'stage', 'group', 'homeName', 'homeAbbr', 'homeFlag', 'homeScore', 'awayName', 'awayAbbr', 'awayFlag', 'awayScore', 'stadium', 'city', 'status', 'resultType', 'homePenaltyScore', 'awayPenaltyScore', 'lastUpdated'],
+  'Schedule': ['matchId', 'matchNumber', 'date', 'localDate', 'localDateOnly', 'stage', 'group', 'homeName', 'homeAbbr', 'homeFlag', 'homeScore', 'awayName', 'awayAbbr', 'awayFlag', 'awayScore', 'stadium', 'city', 'status', 'resultType', 'homePenaltyScore', 'awayPenaltyScore', 'matchTime', 'lastUpdated'],
   'SpecialBets': ['timestamp', 'email', 'displayName', 'semifinals', 'finals', 'champion', 'topScorer']
 };
 
@@ -182,7 +182,7 @@ function getMatchesFromSheet(checkExpiry) {
     }
 
     if (checkExpiry) {
-      var lastUpdated = allData[1][21]; // Cột lastUpdated
+      var lastUpdated = allData[1][22]; // Cột lastUpdated
       if (lastUpdated) {
         var lastUpdatedTime = new Date(lastUpdated).getTime();
         var nowTime = new Date().getTime();
@@ -223,7 +223,8 @@ function getMatchesFromSheet(checkExpiry) {
         MatchStatus: parseInt(row[17]),
         ResultType: parseInt(row[18]),
         HomeTeamPenaltyScore: row[19] !== '' ? parseInt(row[19]) : null,
-        AwayTeamPenaltyScore: row[20] !== '' ? parseInt(row[20]) : null
+        AwayTeamPenaltyScore: row[20] !== '' ? parseInt(row[20]) : null,
+        MatchTime: row[21] || ''
       });
     }
 
@@ -287,6 +288,7 @@ function saveMatchesToSheet(results) {
         m.ResultType,
         m.HomeTeamPenaltyScore !== null ? m.HomeTeamPenaltyScore : '',
         m.AwayTeamPenaltyScore !== null ? m.AwayTeamPenaltyScore : '',
+        m.MatchTime || '',
         timestamp
       ]);
     }
@@ -607,6 +609,33 @@ function deleteSpecialBet(data) {
 }
 
 /**
+ * Kiểm tra xem hiệp 2 đã bắt đầu hay chưa.
+ */
+function isSecondHalfStarted(matchStartTimeStr, matchStatus, matchTime) {
+  var now = new Date();
+  var matchStartTime = new Date(matchStartTimeStr);
+  var elapsedMs = now.getTime() - matchStartTime.getTime();
+  
+  if (matchStatus === 10) {
+    return true;
+  }
+  
+  if (matchStatus === 3 || matchStatus === 4) {
+    if (matchTime) {
+      var minutes = parseInt(matchTime.split('+')[0].replace(/[^0-9]/g, ''), 10);
+      if (!isNaN(minutes) && minutes > 45) {
+        return true;
+      }
+    }
+    if (elapsedMs >= 60 * 60 * 1000) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
  * Đặt dự đoán cho một trận đấu.
  * Nếu đã tồn tại dự đoán cho cùng user + match + betType, sẽ cập nhật.
  *
@@ -640,11 +669,15 @@ function placeBet(data) {
     var scheduleData = scheduleSheet.getDataRange().getValues();
     var matchStartStr = null;
     var matchStatus = 0;
+    var matchNumber = 0;
+    var matchTime = '';
 
     for (var i = 1; i < scheduleData.length; i++) {
       if (String(scheduleData[i][0]) === String(data.matchId)) {
         matchStartStr = scheduleData[i][2]; // Cột date
         matchStatus = parseInt(scheduleData[i][17]); // Cột status
+        matchNumber = parseInt(scheduleData[i][1]); // Cột matchNumber
+        matchTime = scheduleData[i][21]; // Cột matchTime
         break;
       }
     }
@@ -652,9 +685,29 @@ function placeBet(data) {
     if (matchStartStr) {
       var now = new Date();
       var matchStartTime = new Date(matchStartStr);
-      // Nếu status là 3, 4, 12, 10 hoặc đã quá giờ bắt đầu
-      if (matchStatus === 3 || matchStatus === 4 || matchStatus === 12 || matchStatus === 10 || now > matchStartTime) {
-        return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán!', data: null };
+      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 12 || matchStatus === 10 || now > matchStartTime;
+
+      if (data.betType === 'do') {
+        if (isStarted) {
+          return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán 90 phút!', data: null };
+        }
+      } else if (data.betType === 'khomau') {
+        if (matchStatus === 10) {
+          return { success: false, message: '❌ Trận đấu đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán khô máu!', data: null };
+        }
+        if (!isSecondHalfStarted(matchStartStr, matchStatus, matchTime)) {
+          return { success: false, message: '❌ Dự đoán Khô máu chỉ mở khi trận đấu bắt đầu hiệp 2!', data: null };
+        }
+      } else if (data.betType === 'hp') {
+        if (matchNumber < 73) {
+          return { success: false, message: '❌ Dự đoán Hiệp phụ chỉ áp dụng cho các trận đấu từ vòng Knockout (vòng 32) trở đi!', data: null };
+        }
+        if (matchStatus === 10) {
+          return { success: false, message: '❌ Trận đấu đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán hiệp phụ!', data: null };
+        }
+        if (!isSecondHalfStarted(matchStartStr, matchStatus, matchTime)) {
+          return { success: false, message: '❌ Dự đoán Hiệp phụ chỉ mở khi trận đấu bắt đầu hiệp 2!', data: null };
+        }
       }
     }
 
@@ -766,32 +819,10 @@ function changeBet(data) {
       return { success: false, message: 'Định dạng tỷ số không hợp lệ. Đúng format: n-n', data: null };
     }
 
-    // 0. Kiểm tra thời gian khóa dự đoán từ sheet Schedule
-    var scheduleSheet = getOrCreateSheet('Schedule', SHEET_HEADERS['Schedule']);
-    var scheduleData = scheduleSheet.getDataRange().getValues();
-    var matchStartStr = null;
-    var matchStatus = 0;
-
-    for (var i = 1; i < scheduleData.length; i++) {
-      if (String(scheduleData[i][0]) === String(data.matchId)) {
-        matchStartStr = scheduleData[i][2]; // Cột date
-        matchStatus = parseInt(scheduleData[i][17]); // Cột status
-        break;
-      }
-    }
-
-    if (matchStartStr) {
-      var now = new Date();
-      var matchStartTime = new Date(matchStartStr);
-      // Nếu status là 3, 4, 12, 10 hoặc đã quá giờ bắt đầu
-      if (matchStatus === 3 || matchStatus === 4 || matchStatus === 12 || matchStatus === 10 || now > matchStartTime) {
-        return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán!', data: null };
-      }
-    }
-
     var sheet = getOrCreateSheet('Bets', SHEET_HEADERS['Bets']);
     var allData = sheet.getDataRange().getValues();
     var foundRow = -1;
+    var betType = '';
 
     for (var i = 1; i < allData.length; i++) {
       var rowEmail = allData[i][1];    // email
@@ -800,6 +831,7 @@ function changeBet(data) {
 
       if (rowEmail === data.email && rowMatchId === String(data.matchId) && rowScore === data.oldScore) {
         foundRow = i + 1;
+        betType = allData[i][5]; // betType
         break;
       }
     }
@@ -810,6 +842,53 @@ function changeBet(data) {
         message: '❌ Không tìm thấy tỷ số "' + data.oldScore + '" trong dự đoán trận #' + data.matchId,
         data: null
       };
+    }
+
+    // 0. Kiểm tra thời gian khóa dự đoán từ sheet Schedule
+    var scheduleSheet = getOrCreateSheet('Schedule', SHEET_HEADERS['Schedule']);
+    var scheduleData = scheduleSheet.getDataRange().getValues();
+    var matchStartStr = null;
+    var matchStatus = 0;
+    var matchNumber = 0;
+    var matchTime = '';
+
+    for (var i = 1; i < scheduleData.length; i++) {
+      if (String(scheduleData[i][0]) === String(data.matchId)) {
+        matchStartStr = scheduleData[i][2]; // Cột date
+        matchStatus = parseInt(scheduleData[i][17]); // Cột status
+        matchNumber = parseInt(scheduleData[i][1]); // Cột matchNumber
+        matchTime = scheduleData[i][21]; // Cột matchTime
+        break;
+      }
+    }
+
+    if (matchStartStr) {
+      var now = new Date();
+      var matchStartTime = new Date(matchStartStr);
+      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 12 || matchStatus === 10 || now > matchStartTime;
+
+      if (betType === 'do') {
+        if (isStarted) {
+          return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể sửa dự đoán 90 phút!', data: null };
+        }
+      } else if (betType === 'khomau') {
+        if (matchStatus === 10) {
+          return { success: false, message: '❌ Trận đấu đã kết thúc. Bạn không thể sửa dự đoán khô máu!', data: null };
+        }
+        if (!isSecondHalfStarted(matchStartStr, matchStatus, matchTime)) {
+          return { success: false, message: '❌ Dự đoán Khô máu chỉ mở khi trận đấu bắt đầu hiệp 2!', data: null };
+        }
+      } else if (betType === 'hp') {
+        if (matchNumber < 73) {
+          return { success: false, message: '❌ Dự đoán Hiệp phụ chỉ áp dụng cho các trận đấu từ vòng Knockout (vòng 32) trở đi!', data: null };
+        }
+        if (matchStatus === 10) {
+          return { success: false, message: '❌ Trận đấu đã kết thúc. Bạn không thể sửa dự đoán hiệp phụ!', data: null };
+        }
+        if (!isSecondHalfStarted(matchStartStr, matchStatus, matchTime)) {
+          return { success: false, message: '❌ Dự đoán Hiệp phụ chỉ mở khi trận đấu bắt đầu hiệp 2!', data: null };
+        }
+      }
     }
 
     // Cập nhật tỉ số mới
@@ -1381,7 +1460,8 @@ function extractMatchesFromApi(apiData) {
         status: m.MatchStatus || m.Status || '',
         stageName: m.StageName ? (m.StageName[0] ? m.StageName[0].Description : '') : '',
         groupName: m.GroupName ? (m.GroupName[0] ? m.GroupName[0].Description : '') : '',
-        stadiumName: m.Stadium ? (m.Stadium.Name ? (m.Stadium.Name[0] ? m.Stadium.Name[0].Description : '') : '') : ''
+        stadiumName: m.Stadium ? (m.Stadium.Name ? (m.Stadium.Name[0] ? m.Stadium.Name[0].Description : '') : '') : '',
+        matchTime: m.MatchTime || ''
       });
     }
 

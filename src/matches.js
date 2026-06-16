@@ -170,7 +170,8 @@ export const Matches = {
       status: m.MatchStatus,
       resultType: m.ResultType,
       homePenaltyScore: m.HomeTeamPenaltyScore,
-      awayPenaltyScore: m.AwayTeamPenaltyScore
+      awayPenaltyScore: m.AwayTeamPenaltyScore,
+      matchTime: m.MatchTime || m.matchTime || ''
     };
   },
 
@@ -181,6 +182,57 @@ export const Matches = {
       match.status === 0 || match.status === 10 ||
       (now > matchStartTime && (now - matchStartTime > 130 * 60 * 1000))
     );
+  },
+
+  isSecondHalfStarted(match) {
+    const now = new Date();
+    const matchStartTime = new Date(match.date);
+    const elapsedMs = now.getTime() - matchStartTime.getTime();
+
+    if (match.status === 10) {
+      return true;
+    }
+
+    if (match.status === 3 || match.status === 4) {
+      if (match.matchTime) {
+        const minutes = parseInt(match.matchTime.split('+')[0].replace(/[^0-9]/g, ''), 10);
+        if (!isNaN(minutes) && minutes > 45) {
+          return true;
+        }
+      }
+      if (elapsedMs >= 60 * 60 * 1000) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+
+  getOpenBetTypes(match) {
+    const now = new Date();
+    const matchStartTime = new Date(match.date);
+    const isStarted = match.status === 3 || match.status === 4 || match.status === 12 || match.status === 10 || now > matchStartTime;
+    const isFinished = match.status === 10;
+
+    const openTypes = [];
+
+    // 1. Cược 90' (do) chỉ mở trước khi trận đấu bắt đầu
+    if (!isStarted) {
+      openTypes.push('do');
+    }
+
+    // 2. Cược khô máu (khomau) mở khi bắt đầu hiệp 2 và chưa kết thúc trận
+    const is2ndHalf = this.isSecondHalfStarted(match);
+    if (is2ndHalf && !isFinished) {
+      openTypes.push('khomau');
+    }
+
+    // 3. Cược hiệp phụ (hp) chỉ cho trận từ vòng 32 trở đi, mở khi bắt đầu hiệp 2 và chưa kết thúc trận
+    if (is2ndHalf && !isFinished && match.matchNumber >= 73) {
+      openTypes.push('hp');
+    }
+
+    return openTypes;
   },
 
   renderDateBar() {
@@ -328,12 +380,35 @@ export const Matches = {
         extraStatus.classList.add('hidden');
       }
 
-      // Ẩn phần nhập dự đoán nhanh nếu trận đấu đã diễn ra hoặc kết thúc
-      const now = new Date();
-      const matchStartTime = new Date(match.date);
-      const isStarted = match.status === 3 || match.status === 4 || match.status === 12 || match.status === 10 || now > matchStartTime;
-      if (isStarted) {
-        card.querySelector('.match-card__bet-section').classList.add('hidden');
+      // Cấu hình các loại cược đang mở và hiển thị hàng input
+      const openBetTypes = this.getOpenBetTypes(match);
+      const betInputRow = card.querySelector('.bet-input-row');
+      
+      if (openBetTypes.length > 0) {
+        betInputRow.classList.remove('hidden');
+        const select = card.querySelector('.bet-type-select');
+        select.innerHTML = '';
+        
+        if (openBetTypes.includes('do')) {
+          const opt = document.createElement('option');
+          opt.value = 'do';
+          opt.textContent = "90'";
+          select.appendChild(opt);
+        }
+        if (openBetTypes.includes('khomau')) {
+          const opt = document.createElement('option');
+          opt.value = 'khomau';
+          opt.textContent = "🩸";
+          select.appendChild(opt);
+        }
+        if (openBetTypes.includes('hp')) {
+          const opt = document.createElement('option');
+          opt.value = 'hp';
+          opt.textContent = "⭐";
+          select.appendChild(opt);
+        }
+      } else {
+        betInputRow.classList.add('hidden');
       }
 
       // Load dự đoán của trận đấu này
@@ -454,9 +529,11 @@ export const Matches = {
               hasCorrect = grouped[betType].some(score => score.replace(/\s+/g, '') === actualScoreStr);
             }
 
+            const openBetTypes = this.getOpenBetTypes(match);
+            const isOpen = openBetTypes.includes(betType);
+
             const span = document.createElement('span');
-            span.className = `my-pred-tag my-pred-tag--editable ${hasCorrect ? 'my-pred-tag--correct' : ''}`;
-            span.title = 'Nhấp để chỉnh sửa dự đoán này';
+            span.className = `my-pred-tag ${isOpen ? 'my-pred-tag--editable' : ''} ${hasCorrect ? 'my-pred-tag--correct' : ''}`;
             span.dataset.score = scoresStr;
             span.dataset.type = betType;
 
@@ -464,7 +541,13 @@ export const Matches = {
             if (betType === 'khomau') typeLabel = '🩸';
             if (betType === 'hp') typeLabel = '⭐';
 
-            span.innerHTML = `${scoresStr} (${typeLabel}) <span class="edit-icon">✏️</span>`;
+            if (isOpen) {
+              span.title = 'Nhấp để chỉnh sửa dự đoán này';
+              span.innerHTML = `${scoresStr} (${typeLabel}) <span class="edit-icon">✏️</span>`;
+            } else {
+              span.title = 'Dự đoán này đã khóa';
+              span.innerHTML = `${scoresStr} (${typeLabel})`;
+            }
             myPredContainer.appendChild(span);
           });
         } else {
@@ -483,12 +566,30 @@ export const Matches = {
     const select = card.querySelector('.bet-type-select');
     const btnSave = card.querySelector('.bet-btn');
     const btnCancel = card.querySelector('.bet-cancel-btn');
+    const betInputRow = card.querySelector('.bet-input-row');
 
-    if (input && select && btnSave && btnCancel) {
+    if (input && select && btnSave && btnCancel && betInputRow) {
+      // Đảm bảo option đang edit có trong select
+      let hasOption = false;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === type) {
+          hasOption = true;
+          break;
+        }
+      }
+      if (!hasOption) {
+        const opt = document.createElement('option');
+        opt.value = type;
+        const labels = { 'do': "90'", 'khomau': "🩸", 'hp': "⭐" };
+        opt.textContent = labels[type] || type;
+        select.appendChild(opt);
+      }
+
       input.value = score;
       select.value = type;
       btnSave.textContent = 'Lưu';
       btnCancel.classList.remove('hidden');
+      betInputRow.classList.remove('hidden');
       input.focus();
     }
   },
@@ -501,10 +602,45 @@ export const Matches = {
     const input = card.querySelector('.bet-input');
     const btnSave = card.querySelector('.bet-btn');
     const btnCancel = card.querySelector('.bet-cancel-btn');
+    const betInputRow = card.querySelector('.bet-input-row');
 
     if (input) input.value = '';
     if (btnSave) btnSave.textContent = 'Lưu';
     if (btnCancel) btnCancel.classList.add('hidden');
+
+    // Khôi phục hiển thị hàng input dựa trên trạng thái thực tế
+    const matchId = card.dataset.matchId;
+    const match = this.allMatches.find(m => m.id === matchId);
+    if (match && betInputRow) {
+      const openBetTypes = this.getOpenBetTypes(match);
+      if (openBetTypes.length > 0) {
+        betInputRow.classList.remove('hidden');
+        const select = card.querySelector('.bet-type-select');
+        if (select) {
+          select.innerHTML = '';
+          if (openBetTypes.includes('do')) {
+            const opt = document.createElement('option');
+            opt.value = 'do';
+            opt.textContent = "90'";
+            select.appendChild(opt);
+          }
+          if (openBetTypes.includes('khomau')) {
+            const opt = document.createElement('option');
+            opt.value = 'khomau';
+            opt.textContent = "🩸";
+            select.appendChild(opt);
+          }
+          if (openBetTypes.includes('hp')) {
+            const opt = document.createElement('option');
+            opt.value = 'hp';
+            opt.textContent = "⭐";
+            select.appendChild(opt);
+          }
+        }
+      } else {
+        betInputRow.classList.add('hidden');
+      }
+    }
   },
 
   async handlePlaceBet(matchId, matchNumber, input, select, card) {

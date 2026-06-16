@@ -1260,6 +1260,31 @@ function registerUser(data) {
       };
     } else {
       // Đăng ký user mới
+      // Kiểm tra xem World Cup đã bắt đầu chưa (lấy thời gian của trận khai mạc)
+      var scheduleSheet = getOrCreateSheet('Schedule', SHEET_HEADERS['Schedule']);
+      var scheduleData = scheduleSheet.getDataRange().getValues();
+      var firstMatchStartTime = null;
+      for (var i = 1; i < scheduleData.length; i++) {
+        var matchDateStr = scheduleData[i][2]; // Cột date
+        if (matchDateStr) {
+          var matchTime = new Date(matchDateStr);
+          if (!firstMatchStartTime || matchTime < firstMatchStartTime) {
+            firstMatchStartTime = matchTime;
+          }
+        }
+      }
+      
+      if (firstMatchStartTime) {
+        var currentTime = new Date();
+        if (currentTime >= firstMatchStartTime) {
+          return {
+            success: false,
+            message: '❌ Giải đấu đã chính thức khởi tranh. Hệ thống đã đóng đăng ký cho tài khoản mới!',
+            data: null
+          };
+        }
+      }
+
       sheet.appendRow([data.email, data.displayName || '', data.photoUrl || '', now, now]);
 
       return {

@@ -107,17 +107,6 @@ client.on('messageCreate', async (message) => {
       return message.reply('❌ Vui lòng nhập đúng địa chỉ email của bạn!\nCú pháp: `link <email_của_bạn>`\nVí dụ: `link hoangtuan@gmail.com`');
     }
 
-    const db = readDb();
-    const discordId = message.author.id;
-    const displayName = message.member ? message.member.displayName : message.author.username;
-
-    // Lưu vào db.json
-    db[discordId] = {
-      email: email,
-      displayName: displayName
-    };
-    writeDb(db);
-
     try {
       await message.channel.sendTyping();
 
@@ -136,13 +125,21 @@ client.on('messageCreate', async (message) => {
 
       const resJson = await response.json();
       if (resJson.success) {
+        const db = readDb();
+        const discordId = message.author.id;
+        db[discordId] = {
+          email: email,
+          displayName: displayName
+        };
+        writeDb(db);
+
         return message.reply(`✅ **Liên kết tài khoản thành công!**\n• Discord: <@${discordId}>\n• Email: \`${email}\`\n• Tên hiển thị: \`${displayName}\`\n\n${resJson.message}`);
       } else {
-        return message.reply(`⚠️ **Liên kết thành công cục bộ, nhưng máy chủ trả về lỗi:**\n${resJson.message}`);
+        return message.reply(`❌ **Không thể liên kết tài khoản:** Máy chủ báo lỗi: ${resJson.message}`);
       }
     } catch (error) {
       console.error('Lỗi gọi API GAS registerUser:', error);
-      return message.reply(`⚠️ **Liên kết thành công cục bộ, nhưng không thể kết nối tới Google Sheets:**\n${error.message}`);
+      return message.reply(`⚠️ **Không thể liên kết tài khoản:** Không thể kết nối tới Google Sheets: ${error.message}`);
     }
   }
 

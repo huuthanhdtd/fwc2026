@@ -33,10 +33,15 @@ export const App = {
     API.registerUser().then(res => {
       if (res && res.success) {
         this.showToast(res.message, 'success');
+        Matches.init();
+      } else {
+        const errorMsg = res && res.message ? res.message : 'Đăng nhập không thành công.';
+        this.showToast(errorMsg, 'error');
+        setTimeout(() => {
+          Auth.signOut();
+        }, 2000);
       }
     });
-
-    Matches.init();
   },
 
   setupTabs() {

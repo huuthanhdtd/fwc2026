@@ -349,8 +349,8 @@ function updateResultsSheet(results) {
     for (var j = 0; j < results.length; j++) {
       var m = results[j];
       
-      // Chỉ xử lý các trận đấu đã kết thúc (MatchStatus === 10)
-      if (m.MatchStatus === 10 || m.MatchStatus === 0) {
+      // Chỉ xử lý các trận đấu đã kết thúc (MatchStatus === 0)
+      if (m.MatchStatus === 0) {
         var matchId = String(m.IdMatch);
         var matchNumber = m.MatchNumber;
         
@@ -616,7 +616,7 @@ function isSecondHalfStarted(matchStartTimeStr, matchStatus, matchTime) {
   var matchStartTime = new Date(matchStartTimeStr);
   var elapsedMs = now.getTime() - matchStartTime.getTime();
   
-  if (matchStatus === 10) {
+  if (matchStatus === 0) {
     return true;
   }
   
@@ -685,14 +685,14 @@ function placeBet(data) {
     if (matchStartStr) {
       var now = new Date();
       var matchStartTime = new Date(matchStartStr);
-      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 10 || now > matchStartTime;
+      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 0 || now > matchStartTime;
 
       if (data.betType === 'do') {
         if (isStarted) {
           return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán 90 phút!', data: null };
         }
       } else if (data.betType === 'khomau') {
-        if (matchStatus === 10) {
+        if (matchStatus === 0) {
           return { success: false, message: '❌ Trận đấu đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán khô máu!', data: null };
         }
         if (!isSecondHalfStarted(matchStartStr, matchStatus, matchTime)) {
@@ -702,7 +702,7 @@ function placeBet(data) {
         if (matchNumber < 73) {
           return { success: false, message: '❌ Dự đoán Hiệp phụ chỉ áp dụng cho các trận đấu từ vòng Knockout (vòng 32) trở đi!', data: null };
         }
-        if (matchStatus === 10) {
+        if (matchStatus === 0) {
           return { success: false, message: '❌ Trận đấu đã kết thúc. Bạn không thể đặt hoặc sửa dự đoán hiệp phụ!', data: null };
         }
         if (!isSecondHalfStarted(matchStartStr, matchStatus, matchTime)) {
@@ -865,14 +865,14 @@ function changeBet(data) {
     if (matchStartStr) {
       var now = new Date();
       var matchStartTime = new Date(matchStartStr);
-      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 10 || now > matchStartTime;
+      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 0 || now > matchStartTime;
 
       if (betType === 'do') {
         if (isStarted) {
           return { success: false, message: '❌ Trận đấu đã bắt đầu hoặc đã kết thúc. Bạn không thể sửa dự đoán 90 phút!', data: null };
         }
       } else if (betType === 'khomau') {
-        if (matchStatus === 10) {
+        if (matchStatus === 0) {
           return { success: false, message: '❌ Trận đấu đã kết thúc. Bạn không thể sửa dự đoán khô máu!', data: null };
         }
         if (!isSecondHalfStarted(matchStartStr, matchStatus, matchTime)) {
@@ -882,7 +882,7 @@ function changeBet(data) {
         if (matchNumber < 73) {
           return { success: false, message: '❌ Dự đoán Hiệp phụ chỉ áp dụng cho các trận đấu từ vòng Knockout (vòng 32) trở đi!', data: null };
         }
-        if (matchStatus === 10) {
+        if (matchStatus === 0) {
           return { success: false, message: '❌ Trận đấu đã kết thúc. Bạn không thể sửa dự đoán hiệp phụ!', data: null };
         }
         if (!isSecondHalfStarted(matchStartStr, matchStatus, matchTime)) {

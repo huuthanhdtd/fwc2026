@@ -166,7 +166,7 @@ export const Matches = {
         score: m.AwayTeamScore
       },
       stadium: m.Stadium && m.Stadium.Name ? m.Stadium.Name[0].Description : 'Đang cập nhật',
-      city: m.Stadium && m.Stadium.CityName ? m.Stadium.CityName[0].Description : '',
+      city: m.Stadium && m.Stadium.CityName ? m.Stadium.CityName[0].Description + ', ' + m.Stadium.IdCountry : '',
       status: m.MatchStatus,
       resultType: m.ResultType,
       homePenaltyScore: m.HomeTeamPenaltyScore,
@@ -179,7 +179,7 @@ export const Matches = {
     const now = new Date();
     const matchStartTime = new Date(match.date);
     return (
-      match.status === 0 || match.status === 10 ||
+      match.status === 0 ||
       (now > matchStartTime && (now - matchStartTime > 130 * 60 * 1000))
     );
   },
@@ -189,7 +189,7 @@ export const Matches = {
     const matchStartTime = new Date(match.date);
     const elapsedMs = now.getTime() - matchStartTime.getTime();
 
-    if (match.status === 10) {
+    if (match.status === 0) {
       return true;
     }
 
@@ -211,8 +211,8 @@ export const Matches = {
   getOpenBetTypes(match) {
     const now = new Date();
     const matchStartTime = new Date(match.date);
-    const isStarted = match.status === 3 || match.status === 4 || match.status === 10 || now > matchStartTime;
-    const isFinished = match.status === 10;
+    const isStarted = match.status === 3 || match.status === 4 || match.status === 0 || now > matchStartTime;
+    const isFinished = match.status === 0;
 
     const openTypes = [];
 

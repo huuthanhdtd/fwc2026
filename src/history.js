@@ -161,12 +161,12 @@ export const History = {
         });
         matchDateStr = `${matchDay}/${matchMonth}/${matchYear}`;
 
-        isStarted = actualMatch.status === 3 || actualMatch.status === 4 || actualMatch.status === 12 || actualMatch.status === 10 || new Date() > new Date(actualMatch.date);
+        isStarted = actualMatch.status === 3 || actualMatch.status === 4 || actualMatch.status === 0 || new Date() > new Date(actualMatch.date);
 
         if (actualMatch.home.score !== null && actualMatch.away.score !== null) {
           scoreText = `${actualMatch.home.score} - ${actualMatch.away.score}`;
 
-          if (actualMatch.status === 10) {
+          if (actualMatch.status === 0) {
             const actualScore = `${actualMatch.home.score}-${actualMatch.away.score}`;
             const predictions = bet.scores.split(',').map(s => s.trim());
 
@@ -185,9 +185,9 @@ export const History = {
         }
       }
 
-      let betTypeLabel = '90 phút';
-      if (bet.betType === 'khomau') betTypeLabel = '🩸 Khô máu';
-      if (bet.betType === 'hp') betTypeLabel = '⭐ Hiệp phụ';
+      let betTypeLabel = '90\'';
+      if (bet.betType === 'khomau') betTypeLabel = '🩸';
+      if (bet.betType === 'hp') betTypeLabel = '⭐';
 
       const formattedTime = App.timeAgo(bet.timestamp);
 

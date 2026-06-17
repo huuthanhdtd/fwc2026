@@ -685,7 +685,7 @@ function placeBet(data) {
     if (matchStartStr) {
       var now = new Date();
       var matchStartTime = new Date(matchStartStr);
-      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 12 || matchStatus === 10 || now > matchStartTime;
+      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 10 || now > matchStartTime;
 
       if (data.betType === 'do') {
         if (isStarted) {
@@ -865,7 +865,7 @@ function changeBet(data) {
     if (matchStartStr) {
       var now = new Date();
       var matchStartTime = new Date(matchStartStr);
-      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 12 || matchStatus === 10 || now > matchStartTime;
+      var isStarted = matchStatus === 3 || matchStatus === 4 || matchStatus === 10 || now > matchStartTime;
 
       if (betType === 'do') {
         if (isStarted) {

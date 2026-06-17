@@ -211,7 +211,7 @@ export const Matches = {
   getOpenBetTypes(match) {
     const now = new Date();
     const matchStartTime = new Date(match.date);
-    const isStarted = match.status === 3 || match.status === 4 || match.status === 12 || match.status === 10 || now > matchStartTime;
+    const isStarted = match.status === 3 || match.status === 4 || match.status === 10 || now > matchStartTime;
     const isFinished = match.status === 10;
 
     const openTypes = [];
@@ -383,12 +383,12 @@ export const Matches = {
       // Cấu hình các loại cược đang mở và hiển thị hàng input
       const openBetTypes = this.getOpenBetTypes(match);
       const betInputRow = card.querySelector('.bet-input-row');
-      
+
       if (openBetTypes.length > 0) {
         betInputRow.classList.remove('hidden');
         const select = card.querySelector('.bet-type-select');
         select.innerHTML = '';
-        
+
         if (openBetTypes.includes('do')) {
           const opt = document.createElement('option');
           opt.value = 'do';
@@ -693,7 +693,7 @@ export const Matches = {
       case 4:
         return 'Đang diễn ra';
       case 12:
-        return 'Nghỉ giữa hiệp';
+        return 'Chốt đội hình';
       case 10:
         return 'Kết thúc';
       default:

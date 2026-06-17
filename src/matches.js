@@ -97,7 +97,7 @@ export const Matches = {
         .map(m => this.normalizeMatch(m))
         .filter(m => m.home.abbr !== 'TBD' && m.away.abbr !== 'TBD');
       // Sắp xếp theo ngày tăng dần
-      this.allMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
+      // this.allMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
     } else {
       App.showToast('Không thể tải lịch thi đấu từ FIFA API.', 'error');
     }

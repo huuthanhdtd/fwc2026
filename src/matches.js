@@ -221,9 +221,9 @@ export const Matches = {
       openTypes.push('do');
     }
 
-    // 2. Cược khô máu (khomau) mở khi bắt đầu hiệp 2 và chưa kết thúc trận
+    // 2. Cược khô máu (khomau) mở trước khi bắt đầu hiệp 2 và chưa kết thúc trận
     const is2ndHalf = this.isSecondHalfStarted(match);
-    if (is2ndHalf && !isFinished) {
+    if (isStarted && !is2ndHalf && !isFinished) {
       openTypes.push('khomau');
     }
 
@@ -340,7 +340,9 @@ export const Matches = {
       }
 
       const statusBadge = card.querySelector('.match-card__status');
-      statusBadge.textContent = this.getStatusText(displayStatus);
+      let statusText = this.getStatusText(displayStatus);
+      if (statusText === "Đang đá") statusText += " (" + match.matchTime + ")";
+      statusBadge.textContent = statusText;
       statusBadge.className = `match-card__status ${this.getStatusClass(displayStatus)}`;
 
       // Time & Stadium
@@ -687,31 +689,31 @@ export const Matches = {
   getStatusText(status) {
     switch (status) {
       case 0:
-      case 1:
-        return 'Sắp diễn ra';
-      case 3:
-      case 4:
-        return 'Đang diễn ra';
-      case 12:
-        return 'Chốt đội hình';
       case 10:
         return 'Kết thúc';
+      case 1:
+        return 'Sắp đá';
+      case 3:
+      case 4:
+        return 'Đang đá';
+      case 12:
+        return 'Chốt đội hình';
       default:
-        return 'Chưa diễn ra';
+        return 'Chưa đá';
     }
   },
 
   getStatusClass(status) {
     switch (status) {
       case 0:
+      case 10:
+        return 'badge-finished';
       case 1:
         return 'badge-upcoming';
       case 3:
       case 4:
       case 12:
         return 'badge-live';
-      case 10:
-        return 'badge-finished';
       default:
         return 'badge-upcoming';
     }

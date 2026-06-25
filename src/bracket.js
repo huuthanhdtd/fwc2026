@@ -233,18 +233,20 @@ export const Bracket = {
     const layout   = this.calcLayout(cardH, pairSep, groupSep);
     const { totalH } = layout;
 
+    const treeOrder = this.getMatchesTreeOrder(src);
+
     const rounds = [
-      { label: '1/32',       pos: layout.r32, nums: [73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88] },
-      { label: '1/16',       pos: layout.r16, nums: [89,90,91,92,93,94,95,96] },
-      { label: 'Tứ Kết',     pos: layout.qf,  nums: [97,98,99,100] },
-      { label: 'Bán Kết',    pos: layout.sf,  nums: [101,102] },
+      { label: '1/32',       pos: layout.r32, nums: treeOrder.r32 },
+      { label: '1/16',       pos: layout.r16, nums: treeOrder.r16 },
+      { label: 'Tứ Kết',     pos: layout.qf,  nums: treeOrder.qf },
+      { label: 'Bán Kết',    pos: layout.sf,  nums: treeOrder.sf },
       { 
         label: 'Chung Kết & Hạng 3',  
         pos: [
           layout.fin[0],
           { top: layout.fin[0].top + cardH + 55, center: layout.fin[0].center + cardH + 55 }
         ], 
-        nums: [104, 103] 
+        nums: [treeOrder.fin[0], 103] 
       },
     ];
 
@@ -310,6 +312,72 @@ export const Bracket = {
         ${standingsHtml}
       </div>
     `;
+  },
+
+  /* ── trace the tree order dynamically based on placeholders & chronological order ── */
+  getMatchesTreeOrder(srcMatches) {
+    const getMatch = (n) => srcMatches.find(m => parseInt(m.matchNumber, 10) === n) || null;
+    
+    // Chronologically sorted default fallbacks in case of missing matches or parsing issues
+    const defaultR32 = [73, 75, 74, 77, 84, 83, 82, 81, 76, 78, 79, 80, 88, 86, 85, 87];
+    const defaultR16 = [90, 89, 93, 94, 91, 92, 95, 96];
+    const defaultQF  = [97, 98, 99, 100];
+    const defaultSF  = [101, 102];
+    const defaultFin = [104];
+    
+    const sortByDate = (nums) => {
+      return [...nums].sort((a, b) => {
+        const mA = getMatch(a);
+        const mB = getMatch(b);
+        if (!mA || !mB) return 0;
+        return new Date(mA.date) - new Date(mB.date);
+      });
+    };
+
+    const traceBack = (currRoundNums) => {
+      const prevRoundNums = [];
+      currRoundNums.forEach(num => {
+        const m = getMatch(num);
+        if (!m) return;
+        
+        const extractNum = (ph) => {
+          if (!ph) return null;
+          const match = ph.match(/(?:[Mm]atch|W|RU|L)\s*(\d+)/i);
+          return match ? parseInt(match[1], 10) : null;
+        };
+        
+        const hNum = extractNum(m.homePlaceholder || m.home.name);
+        const aNum = extractNum(m.awayPlaceholder || m.away.name);
+        
+        const pair = [];
+        if (hNum && hNum >= 73 && hNum <= 104) pair.push(hNum);
+        if (aNum && aNum >= 73 && aNum <= 104) pair.push(aNum);
+        
+        // Sort the pair chronologically (earlier match first)
+        const sortedPair = sortByDate(pair);
+        prevRoundNums.push(...sortedPair);
+      });
+      return prevRoundNums;
+    };
+    
+    try {
+      const fin = [104];
+      const sf = sortByDate(traceBack(fin)); // Sort SF chronologically
+      const qf = traceBack(sf);              // Groups are ordered by sorted SF
+      const r16 = traceBack(qf);             // Groups are ordered by sorted QF
+      const r32 = traceBack(r16);            // Groups are ordered by sorted R16
+      
+      return {
+        r32: r32.length === 16 ? r32 : defaultR32,
+        r16: r16.length === 8 ? r16 : defaultR16,
+        qf: qf.length === 4 ? qf : defaultQF,
+        sf: sf.length === 2 ? sf : defaultSF,
+        fin: fin
+      };
+    } catch (e) {
+      console.warn("Lỗi trace tree order:", e);
+      return { r32: defaultR32, r16: defaultR16, qf: defaultQF, sf: defaultSF, fin: defaultFin };
+    }
   },
 
   /* ── calculate standings dynamically from matches ───────── */

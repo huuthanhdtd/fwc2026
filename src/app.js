@@ -1,7 +1,7 @@
 import { Auth } from './auth.js';
 import { API } from './api.js';
 import { Matches } from './matches.js';
-import { History } from './history.js';
+import { Bracket } from './bracket.js';
 import { Leaderboard } from './leaderboard.js';
 import { Special } from './special.js';
 
@@ -67,9 +67,8 @@ export const App = {
     });
 
     // Lazy-load dữ liệu tab
-    if (tabName === 'history') {
-      History.init();
-      History.loadHistory();
+    if (tabName === 'bracket') {
+      Bracket.init();
     } else if (tabName === 'leaderboard') {
       Leaderboard.init();
       Leaderboard.loadLeaderboard(Leaderboard.currentType);

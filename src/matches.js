@@ -4,6 +4,7 @@ import { App } from './app.js';
 
 export const Matches = {
   allMatches: [],
+  knockoutMatches: [],  // includes TBD knockout matches for bracket display
   selectedDate: null,
 
   async init() {
@@ -93,10 +94,10 @@ export const Matches = {
   async loadMatches() {
     const res = await API.fetchMatches();
     if (res && res.success && res.data && res.data.Results) {
-      this.allMatches = res.data.Results
-        .map(m => this.normalizeMatch(m))
-        .filter(m => m.home.abbr !== 'TBD' && m.away.abbr !== 'TBD');
-      // Sắp xếp theo ngày tăng dần
+      const normalized = res.data.Results.map(m => this.normalizeMatch(m));
+      this.allMatches = normalized.filter(m => m.home.abbr !== 'TBD' && m.away.abbr !== 'TBD');
+      // Lưu tất cả trận knockout (kể cả TBD) cho sơ đồ bracket
+      this.knockoutMatches = normalized.filter(m => parseInt(m.matchNumber, 10) >= 73);
       // this.allMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
     } else {
       App.showToast('Không thể tải lịch thi đấu từ FIFA API.', 'error');
@@ -165,6 +166,9 @@ export const Matches = {
         flag: getFlagUrl(m.Away ? m.Away.Abbreviation : '', m.Away ? m.Away.PictureUrl : null),
         score: m.AwayTeamScore
       },
+      // Raw placeholders cho bracket display (khi đội chưa được xác định)
+      homePlaceholder: m.PlaceHolderA || '',
+      awayPlaceholder: m.PlaceHolderB || '',
       stadium: m.Stadium && m.Stadium.Name ? m.Stadium.Name[0].Description : 'Đang cập nhật',
       city: m.Stadium && m.Stadium.CityName ? m.Stadium.CityName[0].Description + ', ' + m.Stadium.IdCountry : '',
       status: m.MatchStatus,

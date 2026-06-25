@@ -186,23 +186,10 @@
         </div>
       </section>
 
-      <!-- Tab: Lịch Sử Đặt Dự đoán -->
-      <section id="tab-history" class="tab-panel">
-        <div class="filter-bar">
-          <div class="filter-group">
-            <label for="filter-match">Lọc theo trận đấu:</label>
-            <select id="filter-match" class="filter-select">
-              <option value="all">Tất cả trận đấu</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="filter-date">Lọc theo ngày:</label>
-            <input type="date" id="filter-date" class="filter-input">
-          </div>
-        </div>
-
-        <div id="history-list" class="history-list">
-          <div class="no-data">Không tìm thấy dữ liệu đặt dự đoán nào.</div>
+      <!-- Tab: Sơ Đồ Thi Đấu -->
+      <section id="tab-bracket" class="tab-panel">
+        <div id="bracket-container" class="bracket-container">
+          <div class="no-data">Đang tải sơ đồ thi đấu...</div>
         </div>
       </section>
 
@@ -251,9 +238,9 @@
         <span class="nav-icon">⭐</span>
         <span class="nav-label">Dự đoán khác</span>
       </button>
-      <button class="nav-item" data-tab="history">
-        <span class="nav-icon">📝</span>
-        <span class="nav-label">Lịch sử</span>
+      <button class="nav-item" data-tab="bracket">
+        <span class="nav-icon">🏟️</span>
+        <span class="nav-label">Sơ đồ</span>
       </button>
       <button class="nav-item" data-tab="leaderboard">
         <span class="nav-icon">🏆</span>

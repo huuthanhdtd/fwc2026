@@ -344,6 +344,15 @@ body {
   display: block;
 }
 
+/* Tab bracket dﾃｹng toﾃn b盻・chi盻「 cao cﾃｳ s蘯ｵn */
+#tab-bracket {
+  height: calc(100vh - var(--header-height) - var(--nav-height) - 32px);
+  overflow: hidden;
+  margin: -16px;
+  padding: 0;
+}
+
+
 /* HORIZONTAL DATE PILLS */
 .date-scroll-container {
   overflow-x: auto;
@@ -1588,3 +1597,389 @@ body {
 .bet-item-chip.bet-item-chip--correct .bet-chip-score {
   color: var(--success) !important;
 }
+
+/* =============================================
+   BRACKET / Sﾆ ﾄ雪ｻ・THI ﾄ雪ｺ､U KNOCKOUT
+   ============================================= */
+
+/* Container fills the full tab height */
+.bracket-container {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bracket-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px 0 0;
+}
+
+/* Title bar */
+.bracket-title-bar {
+  text-align: center;
+  padding: 0 16px 10px;
+  flex-shrink: 0;
+}
+.bracket-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-family: var(--font-numbers);
+  background: linear-gradient(135deg, var(--primary), #fff8e8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.bracket-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* Champion banner */
+.bm-champ {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  margin: 0 12px 10px;
+  background: linear-gradient(135deg, rgba(213,168,72,0.18), rgba(213,168,72,0.04));
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  animation: fadeIn 0.4s ease;
+}
+.bm-champ__icon { font-size: 1.4rem; }
+.bm-champ__flag {
+  width: 38px;
+  height: 26px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--primary);
+}
+.bm-champ__label {
+  font-size: 0.65rem;
+  color: var(--primary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.bm-champ__name {
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: var(--font-numbers);
+  color: var(--text-primary);
+}
+
+/* Scroll area: horizontal + vertical */
+.bracket-scroll {
+  flex: 1;
+  overflow: auto;
+  padding: 0 12px 12px;
+}
+
+/* Round headers row */
+.bm-headers {
+  position: relative;
+  height: 28px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+.bm-hdr {
+  position: absolute;
+  top: 0;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 28px;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+/* Board: holds all columns + SVG overlay */
+.bm-board {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Each round column */
+.bmc-col {
+  position: absolute;
+  top: 0;
+}
+
+/* SVG connector lines (overlay) */
+.bm-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* 笏笏 Match card 笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏 */
+.bmc {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 6px 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  cursor: default;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.bmc::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--border);
+  border-radius: 5px 0 0 5px;
+}
+.bmc--done::before { background: var(--primary); }
+.bmc--live::before { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+.bmc--live {
+  border-color: rgba(212,33,61,0.4);
+}
+.bmc--tbd {
+  border-style: dashed;
+  opacity: 0.5;
+}
+.bmc:hover {
+  border-color: rgba(213,168,72,0.5);
+  box-shadow: 0 0 8px rgba(213,168,72,0.15);
+  z-index: 20;
+}
+
+/* Card header: match number + badge */
+.bmc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 1;
+  padding-bottom: 1px;
+}
+.bmc-num {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.bmc-badge {
+  font-size: 0.52rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.bmc-badge--live {
+  background: rgba(212,33,61,0.2);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  animation: pulse 1s ease-in-out infinite alternate;
+}
+.bmc-badge--ft {
+  background: rgba(213,168,72,0.12);
+  color: var(--primary);
+  border: 1px solid rgba(213,168,72,0.3);
+}
+
+/* Team row */
+.bmc-team {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+.bmc-w { background: rgba(213,168,72,0.1); }
+.bmc-l { opacity: 0.38; }
+
+.bmc-flag {
+  width: 18px;
+  height: 13px;
+  object-fit: cover;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+.bmc-n {
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+.bmc-tbd-txt {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+  flex: 1;
+}
+.bmc-s {
+  font-family: var(--font-numbers);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  min-width: 14px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.bmc-sw { color: var(--primary); }
+
+.bmc-extra {
+  font-size: 0.52rem;
+  text-align: center;
+  color: var(--text-muted);
+  line-height: 1;
+  border-top: 1px solid var(--border);
+  padding-top: 1px;
+  margin-top: 1px;
+}
+
+/* Date & Time Style in Bracket Card Header */
+.bmc-time {
+  font-size: 0.55rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-left: 5px;
+  margin-right: auto;
+}
+
+/* Standings Section at the bottom */
+.standings-section {
+  margin-top: 32px;
+  padding: 16px 12px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.standings-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.standings-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-family: var(--font-numbers);
+  background: linear-gradient(135deg, var(--primary), #fff8e8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.standings-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.standings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.standings-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 12px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.standings-card:hover {
+  border-color: rgba(213, 168, 72, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.standings-card__title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 10px;
+  font-family: var(--font-numbers);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+
+.standings-table th,
+.standings-table td {
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.standings-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+
+.standings-table td {
+  color: var(--text-secondary);
+}
+
+.standings-table tbody tr {
+  border-bottom: 1px solid rgba(30, 41, 66, 0.3);
+}
+
+.standings-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.standings-team-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+}
+
+.standings-flag {
+  width: 16px;
+  height: 11px;
+  object-fit: cover;
+  border-radius: 1px;
+}
+
+.standings-team-abbr {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Highlight qualifying positions */
+.standings-row-qualify .standings-rank {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.standings-row-playoff .standings-rank {
+  color: var(--primary);
+  font-weight: 700;
+}
+

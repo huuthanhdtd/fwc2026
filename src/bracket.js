@@ -306,8 +306,8 @@ export const Bracket = {
               </g>
             </svg>
           </div>
-          ${standingsHtml}
         </div>
+        ${standingsHtml}
       </div>
     `;
   },

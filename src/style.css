@@ -5,34 +5,36 @@
   --bg-surface: #172237;
   --bg-surface-hover: #1e2c47;
   --bg-glass: rgba(23, 34, 55, 0.75);
-  
-  --primary: #d5a848; /* Gold */
+
+  --primary: #d5a848;
+  /* Gold */
   --primary-rgb: 213, 168, 72;
   --primary-hover: #e5b858;
   --primary-glow: rgba(213, 168, 72, 0.25);
-  
-  --accent: #d4213d; /* FIFA Red */
+
+  --accent: #d4213d;
+  /* FIFA Red */
   --accent-glow: rgba(212, 33, 61, 0.2);
-  
+
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  
+
   --success: #10b981;
   --error: #ef4444;
   --warning: #f59e0b;
   --info: #3b82f6;
-  
+
   --border: rgba(255, 255, 255, 0.08);
   --border-active: rgba(213, 168, 72, 0.4);
-  
+
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-numbers: 'Outfit', sans-serif;
-  
+
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  
+
   --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --radius-sm: 6px;
   --radius-md: 12px;
@@ -65,13 +67,16 @@ body {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-primary);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
 }
@@ -108,10 +113,21 @@ body {
   animation: slideIn 0.3s ease forwards;
 }
 
-.toast.success { border-left-color: var(--success); }
-.toast.error { border-left-color: var(--error); }
-.toast.info { border-left-color: var(--info); }
-.toast.warning { border-left-color: var(--warning); }
+.toast.success {
+  border-left-color: var(--success);
+}
+
+.toast.error {
+  border-left-color: var(--error);
+}
+
+.toast.info {
+  border-left-color: var(--info);
+}
+
+.toast.warning {
+  border-left-color: var(--warning);
+}
 
 .toast-close {
   background: none;
@@ -344,11 +360,11 @@ body {
   display: block;
 }
 
-/* Tab bracket dﾃｹng toﾃn b盻・chi盻「 cao cﾃｳ s蘯ｵn */
+/* Tab bracket dùng toàn bộ chiều cao tự nhiên để cuộn toàn trang */
 #tab-bracket {
-  height: calc(100vh - var(--header-height) - var(--nav-height) - 32px);
-  overflow: hidden;
-  margin: -16px;
+  height: auto;
+  overflow: visible;
+  margin: 0;
   padding: 0;
 }
 
@@ -1023,6 +1039,7 @@ body {
   .filter-bar {
     flex-direction: row;
   }
+
   .filter-group {
     flex: 1;
   }
@@ -1140,9 +1157,20 @@ body {
   border-radius: 12px;
 }
 
-.status-win { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-.status-lost { background: rgba(239, 68, 68, 0.15); color: var(--error); }
-.status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+.status-win {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+}
+
+.status-lost {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--error);
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+}
 
 .history-card__timestamp {
   font-size: 0.65rem;
@@ -1216,9 +1244,21 @@ body {
   border-color: var(--border-active);
 }
 
-.podium-step--2 { height: 110px; order: 1; }
-.podium-step--1 { height: 150px; order: 2; border-color: var(--primary-glow); }
-.podium-step--3 { height: 80px; order: 3; }
+.podium-step--2 {
+  height: 110px;
+  order: 1;
+}
+
+.podium-step--1 {
+  height: 150px;
+  order: 2;
+  border-color: var(--primary-glow);
+}
+
+.podium-step--3 {
+  height: 80px;
+  order: 3;
+}
 
 .podium-badge {
   font-size: 1.5rem;
@@ -1379,32 +1419,67 @@ body {
 
 /* ANIMATIONS */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slideDown {
-  from { transform: translateY(-10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1.15); opacity: 0.6; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.15);
+    opacity: 0.6;
+  }
 }
 
 /* SPECIAL BETS TAB */
@@ -1421,7 +1496,8 @@ body {
   }
 }
 
-.special-bets-card, .special-bets-team-card {
+.special-bets-card,
+.special-bets-team-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -1489,7 +1565,8 @@ body {
   gap: 8px;
 }
 
-.special-select, .special-input {
+.special-select,
+.special-input {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   color: var(--text-primary);
@@ -1500,7 +1577,8 @@ body {
   transition: all 0.25s ease;
 }
 
-.special-select:focus, .special-input:focus {
+.special-select:focus,
+.special-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 8px var(--primary-glow);
 }
@@ -1563,7 +1641,8 @@ body {
   text-align: left;
 }
 
-.special-table th, .special-table td {
+.special-table th,
+.special-table td {
   padding: 12px;
   border-bottom: 1px solid var(--border);
 }
@@ -1602,18 +1681,17 @@ body {
    BRACKET / Sﾆ ﾄ雪ｻ・THI ﾄ雪ｺ､U KNOCKOUT
    ============================================= */
 
-/* Container fills the full tab height */
+/* Container fills the full tab height naturally */
 .bracket-container {
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  height: auto;
+  overflow: visible;
+  display: block;
 }
 
 .bracket-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto;
   padding: 10px 0 0;
 }
 
@@ -1623,6 +1701,7 @@ body {
   padding: 0 16px 10px;
   flex-shrink: 0;
 }
+
 .bracket-title {
   font-size: 1.15rem;
   font-weight: 800;
@@ -1632,6 +1711,7 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
 .bracket-subtitle {
   font-size: 0.7rem;
   color: var(--text-muted);
@@ -1645,13 +1725,17 @@ body {
   gap: 10px;
   padding: 8px 14px;
   margin: 0 12px 10px;
-  background: linear-gradient(135deg, rgba(213,168,72,0.18), rgba(213,168,72,0.04));
+  background: linear-gradient(135deg, rgba(213, 168, 72, 0.18), rgba(213, 168, 72, 0.04));
   border: 1.5px solid var(--primary);
   border-radius: var(--radius-md);
   flex-shrink: 0;
   animation: fadeIn 0.4s ease;
 }
-.bm-champ__icon { font-size: 1.4rem; }
+
+.bm-champ__icon {
+  font-size: 1.4rem;
+}
+
 .bm-champ__flag {
   width: 38px;
   height: 26px;
@@ -1659,6 +1743,7 @@ body {
   border-radius: 3px;
   border: 1px solid var(--primary);
 }
+
 .bm-champ__label {
   font-size: 0.65rem;
   color: var(--primary);
@@ -1666,6 +1751,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
 .bm-champ__name {
   font-size: 1rem;
   font-weight: 800;
@@ -1673,11 +1759,11 @@ body {
   color: var(--text-primary);
 }
 
-/* Scroll area: horizontal + vertical */
+/* Scroll area: horizontal only */
 .bracket-scroll {
-  flex: 1;
-  overflow: auto;
-  padding: 0 12px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 12px 16px;
 }
 
 /* Round headers row */
@@ -1687,6 +1773,7 @@ body {
   margin-bottom: 4px;
   flex-shrink: 0;
 }
+
 .bm-hdr {
   position: absolute;
   top: 0;
@@ -1739,26 +1826,39 @@ body {
   cursor: default;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+
 .bmc::before {
   content: '';
   position: absolute;
-  left: 0; top: 0; bottom: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
   width: 2px;
   background: var(--border);
   border-radius: 5px 0 0 5px;
 }
-.bmc--done::before { background: var(--primary); }
-.bmc--live::before { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
-.bmc--live {
-  border-color: rgba(212,33,61,0.4);
+
+.bmc--done::before {
+  background: var(--primary);
 }
+
+.bmc--live::before {
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.bmc--live {
+  border-color: rgba(212, 33, 61, 0.4);
+}
+
 .bmc--tbd {
   border-style: dashed;
   opacity: 0.5;
 }
+
 .bmc:hover {
-  border-color: rgba(213,168,72,0.5);
-  box-shadow: 0 0 8px rgba(213,168,72,0.15);
+  border-color: rgba(213, 168, 72, 0.5);
+  box-shadow: 0 0 8px rgba(213, 168, 72, 0.15);
   z-index: 20;
 }
 
@@ -1770,11 +1870,13 @@ body {
   line-height: 1;
   padding-bottom: 1px;
 }
+
 .bmc-num {
   font-size: 0.58rem;
   color: var(--text-muted);
   font-weight: 600;
 }
+
 .bmc-badge {
   font-size: 0.52rem;
   font-weight: 700;
@@ -1783,16 +1885,18 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
+
 .bmc-badge--live {
-  background: rgba(212,33,61,0.2);
+  background: rgba(212, 33, 61, 0.2);
   color: var(--accent);
   border: 1px solid var(--accent);
   animation: pulse 1s ease-in-out infinite alternate;
 }
+
 .bmc-badge--ft {
-  background: rgba(213,168,72,0.12);
+  background: rgba(213, 168, 72, 0.12);
   color: var(--primary);
-  border: 1px solid rgba(213,168,72,0.3);
+  border: 1px solid rgba(213, 168, 72, 0.3);
 }
 
 /* Team row */
@@ -1805,8 +1909,14 @@ body {
   border-radius: 3px;
   padding: 0 1px;
 }
-.bmc-w { background: rgba(213,168,72,0.1); }
-.bmc-l { opacity: 0.38; }
+
+.bmc-w {
+  background: rgba(213, 168, 72, 0.1);
+}
+
+.bmc-l {
+  opacity: 0.38;
+}
 
 .bmc-flag {
   width: 18px;
@@ -1815,6 +1925,7 @@ body {
   border-radius: 1px;
   flex-shrink: 0;
 }
+
 .bmc-n {
   font-size: 0.7rem;
   font-weight: 600;
@@ -1824,12 +1935,14 @@ body {
   text-overflow: ellipsis;
   color: var(--text-primary);
 }
+
 .bmc-tbd-txt {
   font-size: 0.7rem;
   color: var(--text-muted);
   font-style: italic;
   flex: 1;
 }
+
 .bmc-s {
   font-family: var(--font-numbers);
   font-size: 0.82rem;
@@ -1839,7 +1952,10 @@ body {
   text-align: right;
   flex-shrink: 0;
 }
-.bmc-sw { color: var(--primary); }
+
+.bmc-sw {
+  color: var(--primary);
+}
 
 .bmc-extra {
   font-size: 0.52rem;
@@ -1982,4 +2098,3 @@ body {
   color: var(--primary);
   font-weight: 700;
 }
-

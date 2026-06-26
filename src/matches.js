@@ -38,7 +38,15 @@ export const Matches = {
       }
     }
 
-    this.filterByDate(targetDate);
+    this.filterByDate(targetDate, true);
+
+    // Mặc định cuộn sang phải cùng trên thanh chọn ngày
+    const scrollContainer = document.querySelector('.date-scroll-container');
+    if (scrollContainer) {
+      setTimeout(() => {
+        scrollContainer.scrollLeft = scrollContainer.scrollWidth;
+      }, 100);
+    }
   },
 
   setupEventListeners() {
@@ -239,6 +247,30 @@ export const Matches = {
     return openTypes;
   },
 
+  getStageClassForDate(dateStr) {
+    const matches = this.allMatches.filter(m => m.localDateOnly === dateStr);
+    if (matches.length === 0) return 'stage-group';
+
+    // Tìm mã trận lớn nhất để quyết định vòng đấu cao nhất trong ngày
+    let maxMatchNum = 0;
+    for (const m of matches) {
+      const num = parseInt(m.matchNumber, 10);
+      if (!isNaN(num) && num > maxMatchNum) {
+        maxMatchNum = num;
+      }
+    }
+
+    if (maxMatchNum >= 1 && maxMatchNum <= 72) return 'stage-group';
+    if (maxMatchNum >= 73 && maxMatchNum <= 88) return 'stage-r32';
+    if (maxMatchNum >= 89 && maxMatchNum <= 96) return 'stage-r16';
+    if (maxMatchNum >= 97 && maxMatchNum <= 100) return 'stage-qf';
+    if (maxMatchNum >= 101 && maxMatchNum <= 102) return 'stage-sf';
+    if (maxMatchNum === 103) return 'stage-third';
+    if (maxMatchNum === 104) return 'stage-final';
+
+    return 'stage-group';
+  },
+
   renderDateBar() {
     const pillsContainer = document.getElementById('date-pills');
     pillsContainer.innerHTML = '';
@@ -265,7 +297,8 @@ export const Matches = {
       const dayMonthStr = `${day}/${month}`;
 
       const pill = document.createElement('div');
-      pill.className = 'date-pill';
+      const stageClass = this.getStageClassForDate(dateStr);
+      pill.className = `date-pill ${stageClass}`;
       pill.dataset.date = dateStr;
 
       pill.innerHTML = `
@@ -281,14 +314,16 @@ export const Matches = {
     });
   },
 
-  filterByDate(dateStr) {
+  filterByDate(dateStr, isInitial = false) {
     this.selectedDate = dateStr;
 
     // Cập nhật active pill
     document.querySelectorAll('.date-pill').forEach(pill => {
       if (pill.dataset.date === dateStr) {
         pill.classList.add('active');
-        pill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        if (!isInitial) {
+          pill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
       } else {
         pill.classList.remove('active');
       }
@@ -345,7 +380,13 @@ export const Matches = {
 
       const statusBadge = card.querySelector('.match-card__status');
       let statusText = this.getStatusText(displayStatus);
-      if (statusText === "Đang đá") statusText += " (" + match.matchTime + ")";
+      if (statusText === "Đang đá") {
+        if (match.matchTime === "") {
+          statusText = "Nghỉ giữa hiệp";
+        } else {
+          statusText += " (" + match.matchTime + ")";
+        }
+      }
       statusBadge.textContent = statusText;
       statusBadge.className = `match-card__status ${this.getStatusClass(displayStatus)}`;
 

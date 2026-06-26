@@ -414,6 +414,159 @@ body {
   font-weight: 700;
 }
 
+/* Style variants for different tournament stages in date pills */
+
+/* Group Stage - Slate */
+.date-pill.stage-group {
+  background: rgba(71, 85, 105, 0.15);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+.date-pill.stage-group .pill-day {
+  color: #94a3b8;
+}
+.date-pill.stage-group:hover {
+  background: rgba(71, 85, 105, 0.25);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+.date-pill.stage-group.active {
+  background: #475569;
+  border-color: #64748b;
+}
+.date-pill.stage-group.active .pill-day,
+.date-pill.stage-group.active .pill-date {
+  color: #f8fafc;
+}
+
+/* Round of 32 - Teal */
+.date-pill.stage-r32 {
+  background: rgba(13, 148, 136, 0.25);
+  border-color: rgba(20, 184, 166, 0.4);
+}
+.date-pill.stage-r32 .pill-day {
+  color: #2dd4bf;
+}
+.date-pill.stage-r32:hover {
+  background: rgba(13, 148, 136, 0.35);
+  border-color: rgba(20, 184, 166, 0.6);
+}
+.date-pill.stage-r32.active {
+  background: #0d9488;
+  border-color: #14b8a6;
+}
+.date-pill.stage-r32.active .pill-day,
+.date-pill.stage-r32.active .pill-date {
+  color: #ffffff;
+}
+
+/* Round of 16 - Blue */
+.date-pill.stage-r16 {
+  background: rgba(37, 99, 235, 0.25);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+.date-pill.stage-r16 .pill-day {
+  color: #60a5fa;
+}
+.date-pill.stage-r16:hover {
+  background: rgba(37, 99, 235, 0.35);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+.date-pill.stage-r16.active {
+  background: #2563eb;
+  border-color: #3b82f6;
+}
+.date-pill.stage-r16.active .pill-day,
+.date-pill.stage-r16.active .pill-date {
+  color: #ffffff;
+}
+
+/* Quarter-finals - Purple */
+.date-pill.stage-qf {
+  background: rgba(124, 58, 237, 0.25);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+.date-pill.stage-qf .pill-day {
+  color: #c084fc;
+}
+.date-pill.stage-qf:hover {
+  background: rgba(124, 58, 237, 0.35);
+  border-color: rgba(139, 92, 246, 0.6);
+}
+.date-pill.stage-qf.active {
+  background: #7c3aed;
+  border-color: #8b5cf6;
+}
+.date-pill.stage-qf.active .pill-day,
+.date-pill.stage-qf.active .pill-date {
+  color: #ffffff;
+}
+
+/* Semi-finals - Orange */
+.date-pill.stage-sf {
+  background: rgba(234, 88, 12, 0.25);
+  border-color: rgba(249, 115, 22, 0.4);
+}
+.date-pill.stage-sf .pill-day {
+  color: #fb923c;
+}
+.date-pill.stage-sf:hover {
+  background: rgba(234, 88, 12, 0.35);
+  border-color: rgba(249, 115, 22, 0.6);
+}
+.date-pill.stage-sf.active {
+  background: #ea580c;
+  border-color: #f97316;
+}
+.date-pill.stage-sf.active .pill-day,
+.date-pill.stage-sf.active .pill-date {
+  color: #ffffff;
+}
+
+/* Third Place - Bronze */
+.date-pill.stage-third {
+  background: rgba(180, 83, 9, 0.25);
+  border-color: rgba(217, 119, 6, 0.4);
+}
+.date-pill.stage-third .pill-day {
+  color: #fbbf24;
+}
+.date-pill.stage-third:hover {
+  background: rgba(180, 83, 9, 0.35);
+  border-color: rgba(217, 119, 6, 0.6);
+}
+.date-pill.stage-third.active {
+  background: #b45309;
+  border-color: #d97706;
+}
+.date-pill.stage-third.active .pill-day,
+.date-pill.stage-third.active .pill-date {
+  color: #ffffff;
+}
+
+/* Final - Gold */
+.date-pill.stage-final {
+  background: rgba(213, 168, 72, 0.25);
+  border-color: rgba(213, 168, 72, 0.5);
+  box-shadow: 0 0 10px rgba(213, 168, 72, 0.15);
+}
+.date-pill.stage-final .pill-day {
+  color: #f59e0b;
+}
+.date-pill.stage-final:hover {
+  background: rgba(213, 168, 72, 0.35);
+  border-color: rgba(213, 168, 72, 0.7);
+  box-shadow: 0 0 15px rgba(213, 168, 72, 0.25);
+}
+.date-pill.stage-final.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 15px rgba(213, 168, 72, 0.35);
+}
+.date-pill.stage-final.active .pill-day,
+.date-pill.stage-final.active .pill-date {
+  color: var(--bg-primary);
+  font-weight: 700;
+}
+
 .pill-day {
   font-size: 0.75rem;
   color: var(--text-secondary);

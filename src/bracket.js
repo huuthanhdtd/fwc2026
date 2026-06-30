@@ -94,7 +94,7 @@ export const Bracket = {
   statusOf(match) {
     if (!match) return { isFinished: false, isLive: false, hs: '-', as: '-', winner: null, extra: '' };
     const now = new Date(), t0 = new Date(match.date), dt = now - t0;
-    const isFinished = match.status === 0 || (dt > 130 * 60000 && now > t0);
+    const isFinished = match.status === 0; // || (dt > 130 * 60000 && now > t0);
     const isLive = !isFinished && (match.status === 3 || match.status === 4 || now > t0);
 
     const hs = match.home.score !== null ? String(match.home.score) : '-';

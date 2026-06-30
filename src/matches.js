@@ -15,7 +15,7 @@ export const Matches = {
     const todayStr = this.getTodayDateStr();
     const todayMatches = this.allMatches.filter(m => m.localDateOnly === todayStr);
     const hasMatchesToday = todayMatches.length > 0;
-    const allTodayMatchesFinished = hasMatchesToday && todayMatches.every(m => this.isMatchFinished(m));
+    const allTodayMatchesFinished = hasMatchesToday && todayMatches.every(m => m.status === 0);
 
     let targetDate = todayStr;
 
@@ -191,8 +191,7 @@ export const Matches = {
     const now = new Date();
     const matchStartTime = new Date(match.date);
     return (
-      match.status === 0 ||
-      (now > matchStartTime && (now - matchStartTime > 130 * 60 * 1000))
+      match.status === 0 || (now > matchStartTime && (now - matchStartTime > 130 * 60 * 1000))
     );
   },
 
@@ -224,7 +223,7 @@ export const Matches = {
     const now = new Date();
     const matchStartTime = new Date(match.date);
     const isStarted = match.status === 3 || match.status === 4 || match.status === 0 || now > matchStartTime;
-    const isFinished = match.status === 0;
+    const isFinished = this.isMatchFinished(match);
 
     const openTypes = [];
 
@@ -367,16 +366,17 @@ export const Matches = {
 
       // Status
       let displayStatus = match.status;
-      if (this.isMatchFinished(match)) {
-        displayStatus = 10;
-      } else if (displayStatus !== 3 && displayStatus !== 4 && displayStatus !== 12) {
-        // Nếu chưa bắt đầu nhưng đã quá giờ đấu (mà chưa đủ 130 phút) -> Đang diễn ra
-        const now = new Date();
-        const matchStartTime = new Date(match.date);
-        if (now > matchStartTime) {
-          displayStatus = 3;
-        }
-      }
+      // if (this.isMatchFinished(match)) {
+      //   displayStatus = 10;
+      // }
+      // else if (displayStatus !== 3 && displayStatus !== 4 && displayStatus !== 12) {
+      //   // Nếu chưa bắt đầu nhưng đã quá giờ đấu (mà chưa đủ 130 phút) -> Đang diễn ra
+      //   const now = new Date();
+      //   const matchStartTime = new Date(match.date);
+      //   if (now > matchStartTime) {
+      //     displayStatus = 3;
+      //   }
+      // }
 
       const statusBadge = card.querySelector('.match-card__status');
       let statusText = this.getStatusText(displayStatus);

@@ -26,13 +26,13 @@ export const Bracket = {
   /* ── layout math ─────────────────────────────────────────── */
   calcLayout(cardH, pairSep, groupSep) {
     const pairH = 2 * cardH + pairSep;   // height of one 2-match pair
-    const step  = pairH + groupSep;       // vertical distance between pair tops
+    const step = pairH + groupSep;       // vertical distance between pair tops
 
     // R32: 8 pairs × 2 matches = 16 positions
     const r32 = [];
     for (let i = 0; i < 8; i++) {
-      r32.push({ top: i * step,                       center: i * step + cardH / 2 });
-      r32.push({ top: i * step + cardH + pairSep,     center: i * step + cardH + pairSep + cardH / 2 });
+      r32.push({ top: i * step, center: i * step + cardH / 2 });
+      r32.push({ top: i * step + cardH + pairSep, center: i * step + cardH + pairSep + cardH / 2 });
     }
 
     const derive = (src, n) =>
@@ -42,9 +42,9 @@ export const Bracket = {
       });
 
     const r16 = derive(r32, 8);
-    const qf  = derive(r16, 4);
-    const sf  = derive(qf,  2);
-    const fin = derive(sf,  1);
+    const qf = derive(r16, 4);
+    const sf = derive(qf, 2);
+    const fin = derive(sf, 1);
 
     const totalH = r32[15].top + cardH + 16;
     return { r32, r16, qf, sf, fin, totalH };
@@ -68,7 +68,7 @@ export const Bracket = {
     m = ph.match(/[Ll]oser\s+[Mm]atch\s+(\d+)/);
     if (m) return `L${m[1]}`;
     // Fallback: keep first 5 non-space chars
-    return (ph.replace(/\s+/g, '').substring(0, 5)) || 'TBD';
+    return (ph.replace(/\s+/g, '')) || 'TBD';
   },
 
   /* ── match date & time in Vietnam timezone ───────────────── */
@@ -95,7 +95,7 @@ export const Bracket = {
     if (!match) return { isFinished: false, isLive: false, hs: '-', as: '-', winner: null, extra: '' };
     const now = new Date(), t0 = new Date(match.date), dt = now - t0;
     const isFinished = match.status === 0 || (dt > 130 * 60000 && now > t0);
-    const isLive     = !isFinished && (match.status === 3 || match.status === 4 || now > t0);
+    const isLive = !isFinished && (match.status === 3 || match.status === 4 || now > t0);
 
     const hs = match.home.score !== null ? String(match.home.score) : '-';
     const as = match.away.score !== null ? String(match.away.score) : '-';
@@ -111,7 +111,7 @@ export const Bracket = {
 
     let extra = '';
     if (match.homePenaltyScore !== null && match.awayPenaltyScore !== null)
-      extra = `PKS ${match.homePenaltyScore}–${match.awayPenaltyScore}`;
+      extra = '';// `PKS ${match.homePenaltyScore}–${match.awayPenaltyScore}`;
     else if (match.resultType === 2) extra = 'AET';
 
     return { isFinished, isLive, hs, as, winner, extra };
@@ -143,6 +143,9 @@ export const Bracket = {
       ? this.formatPlaceholder(match.awayPlaceholder || match.away.name)
       : (match.away.abbr || match.away.name);
 
+    const homePKS = match.homePenaltyScore !== null ? ` (${match.homePenaltyScore})` : '';
+    const awayPKS = match.awayPenaltyScore !== null ? ` (${match.awayPenaltyScore})` : '';
+
     const homeHtml = homeIsTbd
       ? `<span class="bmc-ph">${homeName}</span>`
       : `<img class="bmc-flag" src="${match.home.flag}" alt="" ${fb}><span class="bmc-n">${homeName}</span>`;
@@ -154,7 +157,7 @@ export const Bracket = {
     const timeStr = this.formatDateTime(match.date);
 
     let badge = '';
-    if (isLive)     badge = `<span class="bmc-badge bmc-badge--live">LIVE</span>`;
+    if (isLive) badge = `<span class="bmc-badge bmc-badge--live">${match.matchTime}</span>`;
     else if (isFinished) badge = `<span class="bmc-badge bmc-badge--ft">FT</span>`;
 
     const allTbd = homeIsTbd && awayIsTbd;
@@ -175,11 +178,11 @@ export const Bracket = {
       </div>
       <div class="bmc-team ${hw ? 'bmc-w' : ''} ${aw && isFinished ? 'bmc-l' : ''}">
         ${homeHtml}
-        <span class="bmc-s ${hw ? 'bmc-sw' : ''}">${hs}</span>
+        <span class="bmc-s ${hw ? 'bmc-sw' : ''}">${hs}${homePKS}</span>
       </div>
       <div class="bmc-team ${aw ? 'bmc-w' : ''} ${hw && isFinished ? 'bmc-l' : ''}">
         ${awayHtml}
-        <span class="bmc-s ${aw ? 'bmc-sw' : ''}">${as}</span>
+        <span class="bmc-s ${aw ? 'bmc-sw' : ''}">${as}${awayPKS}</span>
       </div>
       ${extra ? `<div class="bmc-extra">${extra}</div>` : ''}
     </div>`;
@@ -217,51 +220,51 @@ export const Bracket = {
     const get = (n) => src.find(m => parseInt(m.matchNumber, 10) === n) || null;
 
     /* ── dynamic sizing: fill container width ── */
-    const cardH    = 58;
-    const pairSep  = 4;
+    const cardH = 58;
+    const pairSep = 4;
     const groupSep = 14;
-    const colGap   = 12; // connector zone between columns
+    const colGap = 12; // connector zone between columns
 
     // Available inner width of bracket-container
     // bracket-scroll has padding: 0 12px → subtract 24px
-    const innerW   = Math.max(0, (container.clientWidth || 360) - 24);
-    const minColW  = 110;
-    const colW     = Math.max(minColW, Math.floor((innerW - 4 * colGap) / 5));
-    const boardW   = 5 * colW + 4 * colGap;
-    const step     = colW + colGap;
+    const innerW = Math.max(0, (container.clientWidth || 360) - 24);
+    const minColW = 110;
+    const colW = Math.max(minColW, Math.floor((innerW - 4 * colGap) / 5));
+    const boardW = 5 * colW + 4 * colGap;
+    const step = colW + colGap;
 
-    const layout   = this.calcLayout(cardH, pairSep, groupSep);
+    const layout = this.calcLayout(cardH, pairSep, groupSep);
     const { totalH } = layout;
 
     const treeOrder = this.getMatchesTreeOrder(src);
 
     const rounds = [
-      { label: '1/32',       pos: layout.r32, nums: treeOrder.r32 },
-      { label: '1/16',       pos: layout.r16, nums: treeOrder.r16 },
-      { label: 'Tứ Kết',     pos: layout.qf,  nums: treeOrder.qf },
-      { label: 'Bán Kết',    pos: layout.sf,  nums: treeOrder.sf },
-      { 
-        label: 'Chung Kết & Hạng 3',  
+      { label: '1/32', pos: layout.r32, nums: treeOrder.r32 },
+      { label: '1/16', pos: layout.r16, nums: treeOrder.r16 },
+      { label: 'Tứ Kết', pos: layout.qf, nums: treeOrder.qf },
+      { label: 'Bán Kết', pos: layout.sf, nums: treeOrder.sf },
+      {
+        label: 'Chung Kết & Hạng 3',
         pos: [
           layout.fin[0],
           { top: layout.fin[0].top + cardH + 55, center: layout.fin[0].center + cardH + 55 }
-        ], 
-        nums: [treeOrder.fin[0], 103] 
+        ],
+        nums: [treeOrder.fin[0], 103]
       },
     ];
 
     /* columns */
     const colsHtml = rounds.map((r, ri) => {
       const cards = r.nums.map((n, i) => this.cardHtml(get(n), r.pos[i], colW, cardH)).join('');
-      return `<div class="bmc-col" style="left:${ri*step}px;width:${colW}px;height:${totalH}px">${cards}</div>`;
+      return `<div class="bmc-col" style="left:${ri * step}px;width:${colW}px;height:${totalH}px">${cards}</div>`;
     }).join('');
 
     /* SVG connectors */
     const svgLines = [
       [layout.r32, layout.r16],
       [layout.r16, layout.qf],
-      [layout.qf,  layout.sf],
-      [layout.sf,  layout.fin],
+      [layout.qf, layout.sf],
+      [layout.sf, layout.fin],
     ].map(([src2, dst], ri) =>
       this.connectorLines(src2, dst, ri * step + colW, (ri + 1) * step)
     ).join('');
@@ -297,8 +300,8 @@ export const Bracket = {
         <div class="bracket-scroll">
           <div class="bm-headers" style="width:${boardW}px">
             ${rounds.map((r, ri) =>
-              `<div class="bm-hdr" style="left:${ri*step}px;width:${colW}px">${r.label}</div>`
-            ).join('')}
+      `<div class="bm-hdr" style="left:${ri * step}px;width:${colW}px">${r.label}</div>`
+    ).join('')}
           </div>
           <div class="bm-board" style="width:${boardW}px;height:${totalH}px">
             ${colsHtml}
@@ -317,14 +320,14 @@ export const Bracket = {
   /* ── trace the tree order dynamically based on placeholders & chronological order ── */
   getMatchesTreeOrder(srcMatches) {
     const getMatch = (n) => srcMatches.find(m => parseInt(m.matchNumber, 10) === n) || null;
-    
+
     // Chronologically sorted default fallbacks in case of missing matches or parsing issues
     const defaultR32 = [73, 75, 74, 77, 84, 83, 82, 81, 76, 78, 79, 80, 88, 86, 85, 87];
     const defaultR16 = [90, 89, 93, 94, 91, 92, 95, 96];
-    const defaultQF  = [97, 98, 99, 100];
-    const defaultSF  = [101, 102];
+    const defaultQF = [97, 98, 99, 100];
+    const defaultSF = [101, 102];
     const defaultFin = [104];
-    
+
     const sortByDate = (nums) => {
       return [...nums].sort((a, b) => {
         const mA = getMatch(a);
@@ -339,34 +342,34 @@ export const Bracket = {
       currRoundNums.forEach(num => {
         const m = getMatch(num);
         if (!m) return;
-        
+
         const extractNum = (ph) => {
           if (!ph) return null;
           const match = ph.match(/(?:[Mm]atch|W|RU|L)\s*(\d+)/i);
           return match ? parseInt(match[1], 10) : null;
         };
-        
+
         const hNum = extractNum(m.homePlaceholder || m.home.name);
         const aNum = extractNum(m.awayPlaceholder || m.away.name);
-        
+
         const pair = [];
         if (hNum && hNum >= 73 && hNum <= 104) pair.push(hNum);
         if (aNum && aNum >= 73 && aNum <= 104) pair.push(aNum);
-        
+
         // Sort the pair chronologically (earlier match first)
         const sortedPair = sortByDate(pair);
         prevRoundNums.push(...sortedPair);
       });
       return prevRoundNums;
     };
-    
+
     try {
       const fin = [104];
       const sf = sortByDate(traceBack(fin)); // Sort SF chronologically
       const qf = traceBack(sf);              // Groups are ordered by sorted SF
       const r16 = traceBack(qf);             // Groups are ordered by sorted QF
       const r32 = traceBack(r16);            // Groups are ordered by sorted R16
-      
+
       return {
         r32: r32.length === 16 ? r32 : defaultR32,
         r16: r16.length === 8 ? r16 : defaultR16,

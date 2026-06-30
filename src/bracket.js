@@ -239,8 +239,8 @@ export const Bracket = {
     const treeOrder = this.getMatchesTreeOrder(src);
 
     const rounds = [
-      { label: '1/32', pos: layout.r32, nums: treeOrder.r32 },
-      { label: '1/16', pos: layout.r16, nums: treeOrder.r16 },
+      { label: '32 Đội', pos: layout.r32, nums: treeOrder.r32 },
+      { label: '16 Đội', pos: layout.r16, nums: treeOrder.r16 },
       { label: 'Tứ Kết', pos: layout.qf, nums: treeOrder.qf },
       { label: 'Bán Kết', pos: layout.sf, nums: treeOrder.sf },
       {

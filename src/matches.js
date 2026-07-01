@@ -38,15 +38,15 @@ export const Matches = {
       }
     }
 
-    this.filterByDate(targetDate, true);
+    this.filterByDate(targetDate, false);
 
     // Mặc định cuộn sang phải cùng trên thanh chọn ngày
-    const scrollContainer = document.querySelector('.date-scroll-container');
-    if (scrollContainer) {
-      setTimeout(() => {
-        scrollContainer.scrollLeft = scrollContainer.scrollWidth;
-      }, 100);
-    }
+    // const scrollContainer = document.querySelector('.date-scroll-container');
+    // if (scrollContainer) {
+    //   setTimeout(() => {
+    //     scrollContainer.scrollLeft = scrollContainer.scrollWidth;
+    //   }, 100);
+    // }
   },
 
   setupEventListeners() {
@@ -738,8 +738,9 @@ export const Matches = {
   getStatusText(status) {
     switch (status) {
       case 0:
-      case 10:
         return 'Kết thúc';
+      case 10:
+        return 'Hoãn';
       case 1:
         return 'Sắp đá';
       case 3:
@@ -755,8 +756,9 @@ export const Matches = {
   getStatusClass(status) {
     switch (status) {
       case 0:
-      case 10:
         return 'badge-finished';
+      case 10:
+        return 'badge-upcoming';
       case 1:
         return 'badge-upcoming';
       case 3:

@@ -482,7 +482,7 @@ export const Matches = {
     }
 
     if (bets) {
-      badgeCount.textContent = bets.length;
+      // badgeCount.textContent = bets.length;
 
       // Sắp xếp dự đoán theo tỉ số (scores) thay vì theo thời gian đặt (timestamp)
       bets.sort((a, b) => {
@@ -507,12 +507,16 @@ export const Matches = {
             betsByType[bet.betType].push(bet);
           }
         });
+        let badgeText = `90':${betsByType.do.length}`;
+        if (betsByType.khomau.length > 0) badgeText += ` | 🩸:${betsByType.khomau.length}`;
+        if (betsByType.hp.length > 0) badgeText += ` | ⭐:${betsByType.hp.length}`;
+        badgeCount.textContent = badgeText;
 
         const createColumn = (title, typeBets, className) => {
           const col = document.createElement('div');
           col.className = `bets-col ${className}`;
           col.innerHTML = `
-            <div class="bets-col__title">${title}</div>
+            <div class="bets-col__title">${title} <span class="bets-count-badge">${typeBets.length}</span></div>
             <div class="bets-col__content"></div>
           `;
           const content = col.querySelector('.bets-col__content');
